@@ -1,7 +1,7 @@
-const models = require('../models');
+const models = require('../../models');
 
 
-exports.user_list_get = async function(req, res, next) {
+exports.userListGet = async function(req, res, next) {
 	let users = await models.User.findAll();
 
 	res.status(200).json({
@@ -9,15 +9,11 @@ exports.user_list_get = async function(req, res, next) {
 	})
 };
 
-exports.user_detail = function(req, res, next) {
+exports.userDetail = function(req, res, next) {
 	res.send('NOT IMPLEMENTED: User get by ID');
 };
 
-exports.user_create_get = function(req, res, next) {
-	res.send('NOT IMPLEMENTED: User create');
-};
-
-exports.user_create_post = function(req, res, next) {
+exports.userCreatePost = function(req, res, next) {
 	res.send('NOT IMPLEMENTED: User create post request');
 };
 
