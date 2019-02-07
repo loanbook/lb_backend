@@ -1,7 +1,7 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-var userController = require('../../controllers/apis/usersController');
+const userController = require('../../../controllers/apis/admin/usersController');
 
 
 router.get('/list', userController.userListGet);

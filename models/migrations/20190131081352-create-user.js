@@ -28,6 +28,18 @@ module.exports = {
         type: Sequelize.STRING,
 				maxLength: 100
       },
+      isActive: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
+      },
+      isStaff: {
+        type: Sequelize.BOOLEAN,
+				defaultValue: false
+      },
+      isSuperuser: {
+        type: Sequelize.BOOLEAN,
+				defaultValue: false
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

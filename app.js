@@ -7,8 +7,11 @@ const logger = require('morgan');
 const passport = require('passport');
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/apis/users');
 const authRouter = require('./routes/apis/auth');
+
+// Admin Routers
+const usersRouter = require('./routes/apis/admin/users');
+const investorRouters = require('./routes/apis/admin/investors');
 
 const app = express();
 app.use(expressLayouts);
@@ -29,9 +32,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Passport Middleware
 app.use(passport.initialize());
 
-// app.use('/', indexRouter);
-app.use('/api/v1/users', passport.authenticate('jwt', {session: false}), usersRouter);
+app.use('/', indexRouter);
 app.use('/api/v1/auth', authRouter);
+
+app.use('/api/v1/admin/users', passport.authenticate('jwt', {session: false}), usersRouter);
+app.use('/api/v1/admin/investors', passport.authenticate('jwt', {session: false}), investorRouters);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,8 +1,12 @@
-const models = require('../../models');
+const models = require('../../../models');
 
 
 exports.userListGet = async function(req, res, next) {
-	let users = await models.User.findAll();
+	let users = await models.User.findAll({
+		include: [
+			{model: models.Investor}
+		]
+	});
 
 	res.status(200).json({
 		data: users, totalPages: 1, nextPage: null, previousPage: null, page: 1

@@ -1,8 +1,10 @@
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator/check');
 const models = require('../../models');
+
 
 exports.registerUserPost = async (req, res, next) => {
 		const formData = req.body;
@@ -39,7 +41,7 @@ exports.loginPost = async (req, res, next) => {
 			if (err) {
 				res.send(err);
 			}
-			const token = jwt.sign(user, 'your_jwt_secret');
+			const token = jwt.sign(user, process.env.JSON_WEB_TOEKN_SECRET);
 			return res.json({user, token});
 		});
 

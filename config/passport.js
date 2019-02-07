@@ -1,3 +1,4 @@
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const passportJWT = require("passport-jwt");
@@ -21,6 +22,10 @@ passport.use(
 				return done(null, false, {message: 'Email is not register.'});
 			}
 
+			if(!user.isActive){
+				return done(null, false, {message: 'Account is blocked or not activated. Please contact with admin.'});
+			}
+
 			// Match password
 			bcrypt.compare(password, user.password, (error, isMatch) => {
 				if(error) throw error;
@@ -39,7 +44,7 @@ passport.use(
 
 passport.use(new JWTStrategy({
 		jwtFromRequest: ExtractJWT.fromAuthHeaderWithScheme('token'),
-		secretOrKey   : 'your_jwt_secret'
+		secretOrKey   : process.env.JSON_WEB_TOEKN_SECRET
 	},
 	function (jwtPayload, cb) {
 
