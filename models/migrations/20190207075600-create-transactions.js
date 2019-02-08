@@ -8,13 +8,21 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+			userId: {
+				type: Sequelize.INTEGER,
+				references:{
+					model: 'Users',
+					key: 'id',
+					onDelete: 'CASCADE'
+				}
+			},
       loanId: {
         type: Sequelize.INTEGER,
 				references:{
 					model: 'Loans',
-					key: 'id'
-				},
-        allowNull: false
+					key: 'id',
+					onDelete: 'CASCADE'
+				}
       },
       type: {
         type: Sequelize.STRING,
@@ -32,6 +40,10 @@ module.exports = {
       closingBalance: {
         type: Sequelize.FLOAT,
 				allowNull: false
+      },
+			comment: {
+        type: Sequelize.TEXT,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,
