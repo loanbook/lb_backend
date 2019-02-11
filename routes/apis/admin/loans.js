@@ -10,4 +10,4 @@ router.post('/update/:id/', loansController.updateLoanPut);
 router.post('/destroy/:id/', loansController.loanDelete);
 
 
-exports.module = router;
+module.exports = router;

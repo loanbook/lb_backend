@@ -1,5 +1,6 @@
 const { body,validationResult } = require('express-validator/check');
 const { sanitizeBody } = require('express-validator/filter');
+const models = require('../../../models');
 
 
 exports.createInvestorReqValidator = [
@@ -28,7 +29,7 @@ exports.createInvestorReqValidator = [
 	async (req, res, next) => {
 		const errors = validationResult(req);
 		if(!errors.isEmpty()) {
-			return res.status(422).json({'errors': errors.array({onlyFirstError: true})});
+			res.status(422).json({'errors': errors.array({onlyFirstError: true})});
 		}
 		next();
 	}
@@ -59,8 +60,21 @@ exports.updateInvestorReqValidator = [
 
 	async (req, res, next) => {
 		const errors = validationResult(req);
-		if(!errors.isEmpty()) {
-			return res.status(422).json({'errors': errors.array({onlyFirstError: true})});
+		const investorId = req.params.id;
+		let investor = await models.User.findByPk(investorId, {
+			include: [
+				{
+					model: models.Investor,
+					where: {userId: {[models.Sequelize.Op.not]: null}}
+				}
+			]
+		});
+		req.investor = investor;
+		if(!investor){
+			res.status(404).json({'message': 'No investor found with provided id.'})
+		}
+		else if(!errors.isEmpty()) {
+			res.status(422).json({'errors': errors.array({onlyFirstError: true})});
 		}
 		next();
 	}

@@ -13,24 +13,24 @@ module.exports = {
 				references:{
 					model: 'Loans',
 					key: 'id',
-					onDelete: 'CASCADE'
-				}
+				},
+				onDelete: 'CASCADE'
       },
       investorId: {
         type: Sequelize.INTEGER,
 				references:{
 					model: 'Investors',
 					key: 'id',
-					onDelete: 'CASCADE'
-				}
+				},
+				onDelete: 'CASCADE'
       },
       transactionId: {
         type: Sequelize.INTEGER,
 				references:{
 					model: 'Transactions',
 					key: 'id',
-					onDelete: 'CASCADE'
-				}
+				},
+				onDelete: 'CASCADE'
       },
       percentage: {
         type: Sequelize.FLOAT

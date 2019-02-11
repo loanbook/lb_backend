@@ -66,7 +66,7 @@ exports.createInvestorPost = [
 		user.dataValues.Investor = investor;
 		user.dataValues.Investor.dataValues.Transaction = transaction;
 
-		res.status(200).json({user})
+		res.status(200).json({investor: user})
 	}
 ];
 
@@ -76,43 +76,33 @@ exports.updateInvestorPut = [
 
 	async (req, res, next) => {
 		const investorId = req.params.id;
-		let investor = await models.User.findByPk(investorId, {
-			include: [
-				{
-					model: models.Investor,
-					where: {userId: {[models.Sequelize.Op.not]: null}}
-				}
-			]
-		});
-		if(!investor){ res.status(404).json({message: 'No investor found with provided investor id.'});}
-		else {
-			let amount = req.body.availableBalance;
+		let investor = req.investor;
+		let amount = req.body.availableBalance;
 
-			investor.firstName = req.body.firstName;
-			investor.lastName = req.body.lastName;
-			investor.email = req.body.email;
-			investor.isActive = req.body.isActive;
-			investor.save();
+		investor.firstName = req.body.firstName;
+		investor.lastName = req.body.lastName;
+		investor.email = req.body.email;
+		investor.isActive = req.body.isActive;
+		investor.save();
 
-			let old_balance = investor.Investor.availableBalance;
+		let old_balance = investor.Investor.availableBalance;
 
-			investor.Investor.availableBalance = req.body.availableBalance;
-			investor.Investor.location = req.body.location;
-			investor.Investor.save();
+		investor.Investor.availableBalance = req.body.availableBalance;
+		investor.Investor.location = req.body.location;
+		investor.Investor.save();
 
-			if(old_balance !== parseFloat(amount)) {
-				let transaction = await  models.Transaction.create({
-					type: 'BalanceUpdate',
-					amount: amount,
-					currentBalance: old_balance,
-					closingBalance: req.body.availableBalance,
-					userId: investor.id,
-					comment: "Initial deposit on investor signup."
-				});
-				investor.dataValues.Investor.dataValues.Transaction = transaction;
-			}
-			res.status(200).json({investor})
+		if(old_balance !== parseFloat(amount)) {
+			let transaction = await  models.Transaction.create({
+				type: 'BalanceUpdate',
+				amount: amount,
+				currentBalance: old_balance,
+				closingBalance: req.body.availableBalance,
+				userId: investor.id,
+				comment: "Initial deposit on investor signup."
+			});
+			investor.dataValues.Investor.dataValues.Transaction = transaction;
 		}
+		res.status(200).json({investor: investor})
 	}
 ];
 
