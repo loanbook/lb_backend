@@ -35,6 +35,9 @@ module.exports = {
       percentage: {
         type: Sequelize.FLOAT
       },
+			amount: {
+      	type: Sequelize.FLOAT
+			},
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
