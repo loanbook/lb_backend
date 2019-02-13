@@ -97,6 +97,23 @@ exports.updateBorrowerPut = [
 
 exports.loanBorrowerDelete = [
 	(req, res, next) => {
-		res.status(200).json({})
+		const borrowerId = req.params.id;
+		let investor = models.User.findByPk(borrowerId, {
+			include: [
+				{
+					model: models.Borrower,
+					where: {userId: {[models.Sequelize.Op.not]: null}}
+				}
+			]
+		}).then(q_res => {
+			if(q_res){
+				q_res.destroy().then(dq_res => {
+					res.status(200).json({message: "Borrower has been deleted successfully."})
+				})
+			}
+			else res.status(404).json({message: 'No borrower found with provided borrower id.'})
+		}).catch(error => {
+			res.status(500).json({message: error.message})
+		});
 	}
 ];
