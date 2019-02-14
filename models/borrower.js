@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
   Borrower.associate = function(models) {
     // associations can be defined here
     Borrower.belongsTo(models.User, {foreignKey: 'userId'});
+    Borrower.hasMany(models.Loan, {foreignKey: 'borrowerId'});
   };
   return Borrower;
 };

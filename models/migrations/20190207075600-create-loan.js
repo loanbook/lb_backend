@@ -8,8 +8,16 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      amount: {
-        type: Sequelize.FLOAT,
+			borrowerId: {
+				type: Sequelize.INTEGER,
+				references: {
+					model: 'Borrowers',
+					key: 'id'
+				},
+				onDelete: 'CASCADE'
+			},
+      loanType: {
+        type: Sequelize.STRING,
 				allowNull: false
       },
       duration: {
@@ -20,6 +28,15 @@ module.exports = {
         type: Sequelize.INTEGER,
 				allowNull: false
       },
+			amount: {
+				type: Sequelize.FLOAT,
+				allowNull: false
+			},
+			status: {
+				type: Sequelize.STRING,
+				allowNull: false,
+				maxLength: 100
+			},
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

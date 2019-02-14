@@ -14,7 +14,6 @@ exports.listLoansGet = [
 exports.detailLoanGet = [
 	async (req, res, next) => {
 		const loanId = req.params.id;
-
 		models.Loan.findOne({where: {id: loanId}}).then(q_res => {
 			if(!q_res){
 				res.status(404).json({message: 'No loan is found against provided loan id.'})
