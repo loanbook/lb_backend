@@ -3,7 +3,11 @@ const loanValidators = require('../../../middlewares/apis/admin/loansValidators'
 
 exports.listLoansGet = [
 	async (req, res, next) => {
-		models.Loan.findAll().then(q_res => {
+		models.Loan.findAll({
+			include: [
+				{model: models.Borrower}
+			]
+		}).then(q_res => {
 			res.status(200).json({loans: q_res});
 		}).catch(error => {
 			res.status(500).json({message: error.message});
@@ -14,7 +18,12 @@ exports.listLoansGet = [
 exports.detailLoanGet = [
 	async (req, res, next) => {
 		const loanId = req.params.id;
-		models.Loan.findOne({where: {id: loanId}}).then(q_res => {
+		models.Loan.findOne({
+			where: {id: loanId},
+			include: [
+				{model: models.Borrower}
+			]
+		}).then(q_res => {
 			if(!q_res){
 				res.status(404).json({message: 'No loan is found against provided loan id.'})
 			}else{
@@ -35,13 +44,13 @@ exports.createLoanPost = [
 		models.Loan.create({
 			amount: req.body.amount,
 			duration: req.body.duration,
-			interestRate: req.body.interestRate
+			interestRate: req.body.interestRate,
+			borrowerId: req.borrower.id,
+			status: req.body.status,
+			loanType: req.body.loanType,
 		}).then(q_res => {
-			if(!q_res){
-				res.status(404).json({message: 'No loan is found against provided loan id.'})
-			}else{
-				res.status(200).json({loan: q_res});
-			}
+			q_res.dataValues.Borrower = req.borrower;
+			res.status(200).json({loan: q_res});
 		}).catch(error => {
 			res.status(500).json({message: error.message});
 		});
@@ -59,7 +68,11 @@ exports.updateLoanPut = [
 		loan.amount = req.body.amount;
 		loan.duration = req.body.duration;
 		loan.interestRate = req.body.interestRate;
+		loan.borrowerId = req.Borrower.Borrower.id;
+		loan.status = req.body.status;
+		loan.type = req.body.type;
 		loan.save().then(q_res => {
+			q_res.dataValues.Borrower = req.borrower;
 			res.status(200).json({loan: q_res});
 		}).catch(error => {
 			res.status(500).json({message: error.message})

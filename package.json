@@ -23,6 +23,7 @@
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "path": "^0.12.7",
+    "percent": "^2.0.0",
     "pg": "^7.8.0",
     "pg-hstore": "^2.3.2",
     "pug": "2.0.0-beta11",

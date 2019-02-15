@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const investorController = require('../../../controllers/apis/admin/investorsController');
+const controller = require('../../../controllers/apis/admin/investorsController');
 
-router.get('/list/', investorController.listInvestorsGet);
-router.get('/detail/:id/', investorController.detialInvestorGet);
-router.post('/create/', investorController.createInvestorPost);
-router.put('/update/:id', investorController.updateInvestorPut);
-router.delete('/destroy/:id', investorController.investorDelete);
+router.get('/list/', controller.listInvestorsGet);
+router.get('/detail/:id/', controller.detialInvestorGet);
+router.post('/create/', controller.createInvestorPost);
+router.put('/update/:id', controller.updateInvestorPut);
+router.delete('/destroy/:id', controller.investorDelete);
 
 module.exports = router;
 

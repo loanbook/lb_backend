@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const loansController = require('../../../controllers/apis/admin/loansController');
+const controller = require('../../../controllers/apis/admin/loansController');
 
-router.get('/list/', loansController.listLoansGet);
-router.get('/detail/:id/', loansController.detailLoanGet);
-router.post('/create/', loansController.createLoanPost);
-router.put('/update/:id/', loansController.updateLoanPut);
-router.delete('/destroy/:id/', loansController.loanDelete);
+router.get('/list/', controller.listLoansGet);
+router.get('/detail/:id/', controller.detailLoanGet);
+router.post('/create/', controller.createLoanPost);
+router.put('/update/:id/', controller.updateLoanPut);
+router.delete('/destroy/:id/', controller.loanDelete);
 
 
 module.exports = router;
