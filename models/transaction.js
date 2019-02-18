@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: DataTypes.INTEGER,
     loanId: DataTypes.INTEGER,
     type: DataTypes.STRING,
+    transactionFlow: DataTypes.STRING,
     amount: DataTypes.FLOAT,
     currentBalance: DataTypes.FLOAT,
     closingBalance: DataTypes.FLOAT,

@@ -29,6 +29,11 @@ module.exports = {
         maxLength: 100,
 				allowNull: false
       },
+			transactionFlow: {
+      	type: Sequelize.STRING,
+				maxLength: 100,
+				allowNull: false
+			},
       amount: {
         type: Sequelize.FLOAT,
 				allowNull: false
