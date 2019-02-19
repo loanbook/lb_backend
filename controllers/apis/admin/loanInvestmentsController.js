@@ -7,7 +7,7 @@ exports.listLoanInvestmentsGet = [
 		models.LoanInvestment.findAll({
 			include: [
 				{model: models.Loan},
-				{model: models.Invester}
+				{model: models.Investor}
 			]
 		}).then(q_res => {
 			res.status(200).json({loanInvestments: q_res});
@@ -24,14 +24,13 @@ exports.detailLoanInvestmentGet = [
 		models.LoanInvestment.findByPk(loanInvestmentId, {
 			include: [
 				{model: models.Loan},
-				{model: models.Invester}
+				{model: models.Investor}
 			]
 		}).then(q_res => {
 			res.status(200).json({loanInvestment: q_res});
 		}).catch(error => {
 			res.status(500).json({message: error.message});
 		});
-		res.status(200).json({})
 	}
 ];
 
@@ -111,6 +110,7 @@ exports.updateLoanInvestment = [
 			let transAmount = newAmount - investment.investedAmount;
 			let remainingBalance = investment.Investor.availableBalance - transAmount;
 			investment.investedAmount = newAmount;
+			investment.percentage = percent.calc(newAmount, investment.Loan.amount, 0);
 			models.sequelize.transaction((t) => {
 				return investment.save({transaction: t}).then(q_investment => {
 					investment.Investor.availableBalance = remainingBalance;
@@ -157,8 +157,9 @@ exports.updateLoanInvestment = [
 
 			models.sequelize.transaction((t) => {
 				investment.investedAmount = newAmount;
+				investment.percentage = percent.calc(newAmount, investment.Loan.amount, 0);
 				return investment.save({transaction: t}).then(q_investment => {
-					investment.Investor.closingBalance = closingBalance;
+					investment.Investor.availableBalance = closingBalance;
 					return investment.Investor.save({transaction: t}).then(q_investor => {
 						return models.Transaction.create({
 							userId: investment.investerId,

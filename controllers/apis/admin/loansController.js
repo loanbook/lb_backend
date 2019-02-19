@@ -68,13 +68,13 @@ exports.updateLoanPut = [
 		loan.amount = req.body.amount;
 		loan.duration = req.body.duration;
 		loan.interestRate = req.body.interestRate;
-		loan.borrowerId = req.Borrower.Borrower.id;
 		loan.status = req.body.status;
 		loan.type = req.body.type;
 		loan.save().then(q_res => {
 			q_res.dataValues.Borrower = req.borrower;
 			res.status(200).json({loan: q_res});
 		}).catch(error => {
+			console.log(error);
 			res.status(500).json({message: error.message})
 		})
 	}

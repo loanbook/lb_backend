@@ -102,7 +102,7 @@ exports.updateLoanInvestment = [
 
 	// Request validation
 	body('investedAmount').isLength({min: 1}).withMessage('This field is required.')
-		.isFloat().withMessage("This must be an integer value.")
+		.isFloat({min: 0}).withMessage("This must be an integer value.")
 		.custom((value, {req}) => {
 			const investmentId = req.params.id;
 			const newAmount = parseInt(req.body.investedAmount);
