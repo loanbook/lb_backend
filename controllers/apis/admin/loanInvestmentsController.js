@@ -104,8 +104,8 @@ exports.updateLoanInvestment = [
 	(req, res, next) => {
 		const newAmount = parseInt(req.body.investedAmount);
 		let investment = req.loanInvestment;
-		let currentBalance = investor.availableBalance;
-		let transaction = [];
+		let currentBalance = investment.Investor.availableBalance;
+		let transactions = [];
 
 		if(newAmount > investment.investedAmount){
 			let transAmount = newAmount - investment.investedAmount;
@@ -113,31 +113,34 @@ exports.updateLoanInvestment = [
 			investment.investedAmount = newAmount;
 			models.sequelize.transaction((t) => {
 				return investment.save({transaction: t}).then(q_investment => {
-					return models.Transaction.create({
-						userId: investment.investerId,
-						loanId: loan.id,
-						amount: transAmount,
-						currentBalance: currentBalance,
-						closingBalance: remainingBalance,
-						type: 'LOAN_INVESTMENT',
-						transactionFlow: 'DEBITED'
-					}, {transaction: t}).then(debited_tans => {
-						transaction.push(debited_tans);
+					investment.Investor.availableBalance = remainingBalance;
+					return investment.Investor.save({transaction: t}).then(q_investor => {
 						return models.Transaction.create({
-							userId: investment.Loan.borrowerId,
-							loanId: investment.Loan.loan.id,
+							userId: investment.investerId,
+							loanId: investment.Loan.id,
 							amount: transAmount,
-							currentBalance: 0,
-							closingBalance: 0,
+							currentBalance: currentBalance,
+							closingBalance: remainingBalance,
 							type: 'LOAN_INVESTMENT',
-							transactionFlow: 'CREDITED'
-						}, {transaction: t})
+							transactionFlow: 'DEBITED'
+						}, {transaction: t}).then(debited_tans => {
+							transactions.push(debited_tans);
+							return models.Transaction.create({
+								userId: investment.Loan.borrowerId,
+								loanId: investment.Loan.id,
+								amount: transAmount,
+								currentBalance: 0,
+								closingBalance: 0,
+								type: 'LOAN_INVESTMENT',
+								transactionFlow: 'CREDITED'
+							}, {transaction: t})
+						})
 					})
 				})
 			}).then(result => {
-				transaction.push(result);
+				transactions.push(result);
 
-				models.LoanInvestment.findByPk(lInvestment.id, {
+				models.LoanInvestment.findByPk(req.loanInvestment.id, {
 					include: [
 						{model: models.Investor},
 						{model: models.Loan},
@@ -147,39 +150,41 @@ exports.updateLoanInvestment = [
 					res.status(200).json({loanInvestment});
 				})
 			}).catch(error=>res.status(500).json({message: error.message}))
-		}else{
+		}else if(newAmount < investment.investedAmount){
 			let currentBalance = investment.Investor.availableBalance;
-			let newCurrentBalance = currentBalance + investment.investedAmount;
-			let transAmount = newAmount - investment.investedAmount;
-			let closingBalance = newCurrentBalance + newAmount;
+			let transAmount = investment.investedAmount - newAmount;
+			let closingBalance = currentBalance + transAmount;
 
 			models.sequelize.transaction((t) => {
 				investment.investedAmount = newAmount;
 				return investment.save({transaction: t}).then(q_investment => {
-					return models.Transaction.create({
-						userId: investment.investerId,
-						loanId: investment.Loan.loan.id,
-						amount: transAmount,
-						currentBalance: currentBalance,
-						closingBalance: closingBalance,
-						type: 'LOAN_INVESTMENT',
-						transactionFlow: 'CREDITED'
-					}, {transaction: t}).then(credited_tans => {
-						transaction.push(credited_tans);
+					investment.Investor.closingBalance = closingBalance;
+					return investment.Investor.save({transaction: t}).then(q_investor => {
 						return models.Transaction.create({
-							userId: investment.Loan.borrowerId,
-							loanId: loan.id,
+							userId: investment.investerId,
+							loanId: investment.Loan.id,
 							amount: transAmount,
-							currentBalance: 0,
-							closingBalance: 0,
+							currentBalance: currentBalance,
+							closingBalance: closingBalance,
 							type: 'LOAN_INVESTMENT',
-							transactionFlow: 'DEBITED'
-						}, {transaction: t})
+							transactionFlow: 'CREDITED'
+						}, {transaction: t}).then(credited_tans => {
+							transactions.push(credited_tans);
+							return models.Transaction.create({
+								userId: investment.Loan.borrowerId,
+								loanId: investment.Loan.id,
+								amount: transAmount,
+								currentBalance: 0,
+								closingBalance: 0,
+								type: 'LOAN_INVESTMENT',
+								transactionFlow: 'DEBITED'
+							}, {transaction: t})
+						})
 					})
 				})
 			}).then(result => {
-				transaction.push(result);
-				models.LoanInvestment.findByPk(lInvestment.id, {
+				transactions.push(result);
+				models.LoanInvestment.findByPk(req.loanInvestment.id, {
 					include: [
 						{model: models.Investor},
 						{model: models.Loan},
@@ -189,6 +194,8 @@ exports.updateLoanInvestment = [
 					res.status(200).json({loanInvestment});
 				})
 			}).catch(error=>res.status(500).json({message: error.message}))
+		} else {
+			res.status(200).json({loanInvestment: req.loanInvestment})
 		}
 	}
 ];
