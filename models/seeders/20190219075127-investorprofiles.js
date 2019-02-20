@@ -13,7 +13,6 @@ module.exports = {
 		  {
 		    id: 1,
         userId: 2,
-        availableBalance: 20000,
         location: 'Paris, France',
 				createdAt: '2019-01-01 00:00:00',
 				updatedAt: '2019-01-01 00:00:00'
@@ -21,7 +20,6 @@ module.exports = {
 		  {
 				id: 2,
         userId: 3,
-        availableBalance: 30000,
         location: 'Paris, France',
 				createdAt: '2019-01-01 00:00:00',
 				updatedAt: '2019-01-01 00:00:00'
@@ -29,7 +27,6 @@ module.exports = {
 		  {
 				id: 3,
         userId: 4,
-        availableBalance: 50000,
         location: 'Paris, France',
 				createdAt: '2019-01-01 00:00:00',
 				updatedAt: '2019-01-01 00:00:00'

@@ -14,7 +14,6 @@ const usersRouter = require('./routes/apis/admin/users');
 const investorRouters = require('./routes/apis/admin/investors');
 const borrowerRouters = require('./routes/apis/admin/borrowers');
 const loansRouters = require('./routes/apis/admin/loans');
-const loansInvestmentsRouters = require('./routes/apis/admin/loanInvestments');
 
 const app = express();
 app.use(expressLayouts);
@@ -42,7 +41,6 @@ app.use('/api/v1/admin/users', passport.authenticate('jwt', {session: false}), u
 app.use('/api/v1/admin/investors', passport.authenticate('jwt', {session: false}), investorRouters);
 app.use('/api/v1/admin/borrowers', passport.authenticate('jwt', {session: false}), borrowerRouters);
 app.use('/api/v1/admin/loans', passport.authenticate('jwt', {session: false}), loansRouters);
-app.use('/api/v1/admin/loans/investments/', passport.authenticate('jwt', {session: false}), loansInvestmentsRouters);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

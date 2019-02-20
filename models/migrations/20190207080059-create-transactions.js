@@ -38,14 +38,6 @@ module.exports = {
         type: Sequelize.FLOAT,
 				allowNull: false
       },
-      currentBalance: {
-        type: Sequelize.FLOAT,
-				allowNull: false
-      },
-      closingBalance: {
-        type: Sequelize.FLOAT,
-				allowNull: false
-      },
 			comment: {
         type: Sequelize.TEXT,
         allowNull: true,

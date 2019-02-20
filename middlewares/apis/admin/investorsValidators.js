@@ -16,15 +16,12 @@ exports.createInvestorReqValidator = [
 		return !user;
 	}).withMessage("Email is already registered."),
 	body('isActive').isLength({min: 1}).withMessage('This field is required').isBoolean(),
-	body('availableBalance').isLength({min: 1}).withMessage('This field is required.')
-													.isInt({min: 1}).withMessage('Balance should be greater then zero.'),
 	body('location').isLength({min: 1}).withMessage('This field is required.'),
 
 	sanitizeBody('firstName').escape().trim(),
 	sanitizeBody('lastName').escape().trim(),
 	sanitizeBody('email').escape().trim(),
 	sanitizeBody('isActive').escape().trim(),
-	sanitizeBody('availableBalance').escape().trim(),
 
 	async (req, res, next) => {
 		const errors = validationResult(req);
@@ -48,15 +45,12 @@ exports.updateInvestorReqValidator = [
 		return !user;
 	}).withMessage("Email is already registered."),
 	body('isActive').isLength({min: 1}).withMessage('This field is required').isBoolean(),
-	body('availableBalance').isLength({min: 1}).withMessage('This field is required.')
-		.isInt({min: 1}).withMessage('Balance should be greater then zero.'),
 	body('location').isLength({min: 1}).withMessage('This field is required.'),
 
 	sanitizeBody('firstName').escape().trim(),
 	sanitizeBody('lastName').escape().trim(),
 	sanitizeBody('email').escape().trim(),
 	sanitizeBody('isActive').escape().trim(),
-	sanitizeBody('availableBalance').escape().trim(),
 
 	async (req, res, next) => {
 		const errors = validationResult(req);

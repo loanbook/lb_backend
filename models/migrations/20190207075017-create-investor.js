@@ -17,10 +17,6 @@ module.exports = {
 				onDelete: 'CASCADE',
 				allowNull: false
       },
-      availableBalance: {
-        type: Sequelize.FLOAT,
-				allowNull: false
-      },
       location: {
         type: Sequelize.STRING
       },

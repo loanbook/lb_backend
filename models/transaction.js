@@ -6,8 +6,6 @@ module.exports = (sequelize, DataTypes) => {
     type: DataTypes.STRING,
     transactionFlow: DataTypes.STRING,
     amount: DataTypes.FLOAT,
-    currentBalance: DataTypes.FLOAT,
-    closingBalance: DataTypes.FLOAT,
     comment: DataTypes.TEXT
   }, {});
   Transaction.associate = function(models) {
