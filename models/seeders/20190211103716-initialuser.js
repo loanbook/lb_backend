@@ -15,7 +15,6 @@ module.exports = {
     return queryInterface.bulkInsert('Users', [
       // Admin users
       {
-        id: 1,
         firstName: 'Jone',
         lastName: 'Doe',
         email: 'admin@loanbook.com',
@@ -28,7 +27,6 @@ module.exports = {
       },
       // Investor Users
       {
-				id: 2,
         firstName: 'Alex investor',
         lastName: 'Tester',
 				email: 'alex.investor@loanbook.com',
@@ -38,7 +36,6 @@ module.exports = {
 				updatedAt: '2019-01-01 00:00:00'
       },
       {
-				id: 3,
         firstName: 'Alina investor',
         lastName: 'Tester',
 				email: 'alina.investor@loanbook.com',
@@ -48,7 +45,6 @@ module.exports = {
 				updatedAt: '2019-01-01 00:00:00'
       },
       {
-				id: 4,
         firstName: 'Jmima investor',
         lastName: 'Tester',
 				email: 'Jmima.investor@loanbook.com',
@@ -61,7 +57,6 @@ module.exports = {
       // Borrower Users
 
 			{
-				id: 5,
 				firstName: 'Rasel MM',
 				lastName: 'Tester',
 				email: 'raselmm.borrower@loanbook.com',
@@ -71,7 +66,6 @@ module.exports = {
 				updatedAt: '2019-01-01 00:00:00'
 			},
 			{
-				id: 6,
 				firstName: 'Jbeen TT',
 				lastName: 'Tester',
 				email: 'Jbeen.borrower@loanbook.com',
@@ -81,7 +75,6 @@ module.exports = {
 				updatedAt: '2019-01-01 00:00:00'
 			},
 			{
-				id: 7,
 				firstName: 'Dead TT',
 				lastName: 'Tester',
 				email: 'dead.borrower@loanbook.com',
@@ -98,8 +91,12 @@ module.exports = {
       Add reverting commands here.
       Return a promise to correctly handle asynchronicity.
     */
-		return queryInterface.bulkDelete('Users', null, {where: {id: {
-					[Op.in]: [1, 2, 3, 4, 5, 6, 7]
+		return queryInterface.bulkDelete('Users', null, {where: {email: {
+					[Op.in]: [
+						'admin@loanbook.com',
+						'alex.investor@loanbook.com', 'alina.investor@loanbook.com', 'Jmima.investor@loanbook.com',
+						'raselmm.borrower@loanbook.com', 'Jbeen.borrower@loanbook.com', 'dead.borrower@loanbook.com'
+					]
       }
 		}});
   }

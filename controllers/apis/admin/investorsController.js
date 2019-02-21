@@ -2,6 +2,7 @@ const uuidv1 = require('uuid/v1');
 const models = require('../../../models');
 const authHelper = require('../../helpers/authHelper');
 const investorValidators = require('../../../middlewares/apis/admin/investorsValidators');
+const aggregationsHelper = require('../../helpers/aggregations');
 
 
 exports.listInvestorsGet = async (req, res, next) => {
@@ -28,6 +29,7 @@ exports.detialInvestorGet = [
 				}
 			]
 		});
+		investor.dataValues.investment = aggregationsHelper.fetchInvestorInvestment(investor.userid);
 		if(investor) res.status(200).json({investor});
 		else res.status(404).json({message: 'No investor found with provided investor id.'})
 	}
@@ -39,8 +41,8 @@ exports.createInvestorPost = [
 	investorValidators.createInvestorReqValidator,
 
 	async (req, res, next) => {
-
 		let initialDeposit = parseInt(req.body.initialDeposit);
+		let investorProfile = null;
 
 		models.sequelize.transaction((t) => {
 			return models.User.create({
@@ -49,40 +51,29 @@ exports.createInvestorPost = [
 				email: req.body.email,
 				isActive: req.isActive,
 				password: authHelper.getPasswordHash(uuidv1())
-			}, {transaction});
+			}, {transaction: t}).then(user => {
+				investorProfile = user;
+				return models.Investor.create({
+					userId: user.id,
+					location: req.body.location,
+				}, {transaction: t})
+			})
 		}).then(result => {
-
-		}).catch(errro => {
-
+			investorProfile.dataValues.Investor = result;
+			const initialDeposit = parseInt(req.body.initialBalance);
+			if(initialDeposit){
+				models.Transaction.create({
+					userId: result.userId, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: initialDeposit,
+					comment: 'Initial deposit'
+				}).then(trans => {
+					res.status(200).json({investor: investorProfile, transaction: trans})
+				})
+			}else{
+				res.status(200).json({investor: investorProfile})
+			}
+		}).catch(error => {
+			res.status(500).json({error: error.message})
 		});
-
-		let user = await models.User.create({
-			firstName: req.body.firstName,
-			lastName: req.body.lastName,
-			email: req.body.email,
-			isActive: req.isActive,
-			password: authHelper.getPasswordHash(uuidv1())
-		});
-
-		let investor = await models.Investor.create({
-			userId: user.id,
-			location: req.body.location,
-		});
-
-		if(initialDeposit && initialDeposit > 0){
-			let transaction = await  models.Transaction.create({
-				type: 'Deposit',
-				transactionType: 'CREDITED',
-				amount: req.body.availableBalance,
-				userId: user.id,
-				comment: "Initial deposit on investor signup."
-			});
-		}
-
-		user.dataValues.Investor = investor;
-		user.dataValues.Investor.dataValues.Transaction = transaction;
-
-		res.status(200).json({investor: user})
 	}
 ];
 
@@ -98,11 +89,15 @@ exports.updateInvestorPut = [
 		investor.lastName = req.body.lastName;
 		investor.email = req.body.email;
 		investor.isActive = req.body.isActive;
-		investor.save();
+		investor.save().then(user => {
+			investor.Investor.location = req.body.location;
+			investor.Investor.save().then(q_investor => {
+				res.status(200).json({investor: investor})
+			})
+		}).catch(error => {
+			res.status(500).json({message: error.message})
+		});
 
-		investor.Investor.location = req.body.location;
-		investor.Investor.save();
-		res.status(200).json({investor: investor})
 	}
 ];
 
@@ -122,7 +117,6 @@ exports.investorDelete = async (req, res, next) => {
 		investor.destroy().then((q_data) => {
 			res.status(200).json({'message': 'Investor has been deleted successfully.'})
 		}).catch((error) => {
-			console.log(error);
 			res.status(500).json({'message': "Unable to delete investor"})
 		})
 	}

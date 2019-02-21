@@ -2,40 +2,31 @@
 
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
+const models = require('../index');
 
+const borrowersEmail = ['raselmm.borrower@loanbook.com', 'Jbeen.borrower@loanbook.com', 'dead.borrower@loanbook.com'];
 
 module.exports = {
-  up: (queryInterface, Sequelize) => {
+  up: async (queryInterface, Sequelize) => {
     /*
       Add altering commands here.
       Return a promise to correctly handle asynchronicity.
     */
-		return queryInterface.bulkInsert('Borrowers', [
-		  {
-		    id: 1,
-        userId: 5,
-        businessName: "businessName 1",
-        description: 'Description 1',
+
+		let users = await models.User.findAll({where: {email: {[Op.in]: borrowersEmail}}});
+		let borrowers_r = [];
+
+		for (let index in users) {
+			let user = users[index];
+			borrowers_r.push({
+				userId: user.id,
+				businessName: "businessName " + index,
 				createdAt: '2019-01-01 00:00:00',
 				updatedAt: '2019-01-01 00:00:00'
-		  },
-		  {
-		    id: 2,
-        userId: 6,
-        businessName: "businessName 2",
-        description: 'Description 13',
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00'
-		  },
-		  {
-		    id: 3,
-        userId: 7,
-        businessName: "businessName 3",
-        description: 'Description 3',
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00'
-		  }
-		], {});
+			})
+		}
+
+		return queryInterface.bulkInsert('Borrowers', borrowers_r, {});
   },
 
   down: (queryInterface, Sequelize) => {
@@ -44,7 +35,7 @@ module.exports = {
       Return a promise to correctly handle asynchronicity.
     */
 		return queryInterface.bulkDelete('Borrowers', null, {where: {
-				[Op.in]: [1, 2, 3]
+				email: {[Op.in]: borrowersEmail}
 			}
 		});
   }

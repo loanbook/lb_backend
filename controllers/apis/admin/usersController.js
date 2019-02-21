@@ -4,7 +4,8 @@ const models = require('../../../models');
 exports.userListGet = async function(req, res, next) {
 	let users = await models.User.findAll({
 		include: [
-			{model: models.Investor}
+			{model: models.Investor},
+			{model: models.Borrower}
 		]
 	});
 

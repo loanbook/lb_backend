@@ -24,10 +24,6 @@ module.exports = {
         type: Sequelize.STRING,
 				maxLength: 255
       },
-      role: {
-        type: Sequelize.STRING,
-				maxLength: 100
-      },
       isActive: {
         type: Sequelize.BOOLEAN,
         defaultValue: true

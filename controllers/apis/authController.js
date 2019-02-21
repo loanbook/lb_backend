@@ -16,7 +16,6 @@ exports.registerUserPost = async (req, res, next) => {
 				password: hash,
 				firstName: formData.firstName,
 				lastName: formData.lastName,
-				role: formData.role
 			});
 			res.status(200).json(user)
 		} catch (e) {
