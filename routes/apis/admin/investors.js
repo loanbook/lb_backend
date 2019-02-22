@@ -9,5 +9,10 @@ router.post('/create/', controller.createInvestorPost);
 router.put('/update/:id', controller.updateInvestorPut);
 router.delete('/destroy/:id', controller.investorDelete);
 
+
+router.post('/add/deposit/', controller.investorAddDeposit);
+
+
+
 module.exports = router;
 

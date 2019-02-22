@@ -36,7 +36,7 @@ module.exports = {
 			},
       amount: {
         type: Sequelize.FLOAT,
-				allowNull: false
+				allowNull: false,
       },
 			comment: {
         type: Sequelize.TEXT,

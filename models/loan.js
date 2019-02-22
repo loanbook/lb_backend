@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
   Loan.associate = function(models) {
 		// associations can be defined here
 		Loan.hasMany(models.Transaction, {foreignKey: 'loanId'});
+		Loan.hasMany(models.Installment, {foreignKey: 'loanId'});
 		Loan.belongsTo(models.Borrower, {foreignKey: 'borrowerId'});
   };
   return Loan;

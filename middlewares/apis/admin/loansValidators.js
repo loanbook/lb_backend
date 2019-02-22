@@ -48,7 +48,6 @@ exports.updateLoanReqValidator = [
 	// Processing initial data
 	(req, res, next) => {
 		const loanId = req.params.id;
-		const status = req.body.status;
 
 		models.Loan.findOne({where: {id: loanId}}).then(q_res => {
 			if(!q_res){

@@ -2,7 +2,7 @@ const uuidv1 = require('uuid/v1');
 const models = require('../../../models');
 const authHelper = require('../../helpers/authHelper');
 const investorValidators = require('../../../middlewares/apis/admin/investorsValidators');
-const aggregationsHelper = require('../../helpers/aggregations');
+const aggregationsHelper = require('../../helpers/aggregationsHelper');
 
 
 exports.listInvestorsGet = async (req, res, next) => {
@@ -29,8 +29,10 @@ exports.detialInvestorGet = [
 				}
 			]
 		});
-		investor.dataValues.investment = aggregationsHelper.fetchInvestorInvestment(investor.userid);
-		if(investor) res.status(200).json({investor});
+		if(investor){
+			investor.dataValues.investment = await aggregationsHelper.fetchInvestorInvestment(investor.id);
+			res.status(200).json({investor});
+		}
 		else res.status(404).json({message: 'No investor found with provided investor id.'})
 	}
 ];
@@ -98,6 +100,20 @@ exports.updateInvestorPut = [
 			res.status(500).json({message: error.message})
 		});
 
+	}
+];
+
+
+exports.investorAddDeposit = [
+	investorValidators.addDepositValidator,
+
+	async (req, res, next) => {
+		models.Transaction.create({
+			userId: req.investor.id, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: parseInt(req.body.amount),
+			comment: 'Deposit'
+		}).then(trans => {
+			res.status(200).json({transaction: trans, investor: req.investor})
+		}).catch(error=>res.status(500).json({message: error.message}))
 	}
 ];
 
