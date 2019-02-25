@@ -27,6 +27,7 @@ module.exports = {
 				amount: 2000 * (index + 1),
 				status: 'IN_REVIEW',
 				loanType: 'FIXED_INTEREST',
+				loanDate: '2019-05-01 00:00:00',
 				createdAt: '2019-01-01 00:00:00',
 				updatedAt: '2019-01-01 00:00:00',
 			})

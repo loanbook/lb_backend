@@ -2,10 +2,14 @@ const moment = require('moment');
 const momentTZ = require('moment-timezone');
 
 
-noAmortSchedule = (duration, interest, capital) => {
+exports.noAmortSchedule = (duration, initialDate, interest, capital) => {
 	interest = (interest / 100) * capital;
 	let principal = capital / duration;
 	let payment = interest + principal;
+
+	let due_date = moment(initialDate, 'YYYY-MM-DD');
+	if (!due_date.isValid())
+		throw new Error('initialDate: Invalid date is provided.');
 
 	schedule = [{
 		number: 0,
@@ -13,8 +17,8 @@ noAmortSchedule = (duration, interest, capital) => {
 		interest: 0,
 		principal: 0,
 		balance: capital,
-		status: "disbursment",
-		due_date: moment()
+		status: "DISBURSEMENT",
+		due_date: due_date
 	}];
 
 	for (i = 1; i <= duration; i++) {
@@ -24,18 +28,22 @@ noAmortSchedule = (duration, interest, capital) => {
 			interest: interest,
 			principal: principal,
 			balance: capital - (i*principal),
-			tracking: "payment due",
-			due_date: moment().add(i, 'months').calendar()
+			tracking: "PAYMENT_DUE",
+			due_date: due_date.add(1, 'months').calendar()
 		};
 		schedule.push(amortization_pmt)
 	}
 	return schedule
 };
 
-finalAmortSchedule = (duration, interest, capital) => {
+exports.finalAmortSchedule = (duration, initialDate, interest, capital) => {
 
 	interest = (interest / 100) * capital;
 	let payment = interest;
+
+	let due_date = moment(initialDate, 'YYYY-MM-DD');
+	if (!due_date.isValid())
+		throw new Error('initialDate: Invalid date is provided.');
 
 	schedule = [{
 		number: 0,
@@ -43,8 +51,8 @@ finalAmortSchedule = (duration, interest, capital) => {
 		interest: 0,
 		principal: 0,
 		balance: capital,
-		tracking: "disbursment",
-		due_date: moment()
+		tracking: "DISBURSEMENT",
+		due_date: due_date
 	}];
 
 	for (i = 1; i <= duration; i++) {
@@ -55,8 +63,8 @@ finalAmortSchedule = (duration, interest, capital) => {
 				interest: interest,
 				principal: 0,
 				balance: capital,
-				tracking: "payment due",
-				due_date: moment().add(i, 'months').calendar()
+				tracking: "PAYMENT_DUE",
+				due_date: due_date.add(1, 'months').calendar()
 			};
 			schedule.push(amortization_pmt)
 		} else {
@@ -66,17 +74,11 @@ finalAmortSchedule = (duration, interest, capital) => {
 				interest: interest,
 				principal: capital,
 				balance: 0,
-				tracking: "payment due",
-				due_date: moment().add(i, 'months').calendar()
+				tracking: "PAYMENT_DUE",
+				due_date: due_date.add(1, 'months').calendar()
 			};
 			schedule.push(amortization_pmt)
 		}
 	}
 	return schedule
-};
-
-
-exports.module = {
-	noAmortSchedule: noAmortSchedule,
-	finalAmortSchedule: finalAmortSchedule
 };

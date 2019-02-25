@@ -1,5 +1,6 @@
 const {body, validationResult} = require('express-validator/check');
 const {sanitizeBody} = require('express-validator/filter');
+const moment = require('moment');
 const models = require('../../../models');
 const constants = require('../../../config/constants');
 
@@ -25,6 +26,17 @@ exports.createLoanReqValidator = [
 	body('interestRate').isLength({min: 1}).withMessage("This field is required.")
 		.isFloat().withMessage('This must be an integer value.'),
 	body('loanType').isLength({min: 1}).withMessage('This field is required.').isIn(constants.LOAN_TYPES),
+	body('loanDate').isLength({min: 1}).withMessage("This field is required.")
+		.custom((value, {req}) => {
+			const date_str = req.body.loanDate;
+			const now = moment();
+			let date = moment(date_str, "YYYY-MM-DD", true);
+			if(!date.isValid())
+				throw new Error("Invalid date(YYYY-MM-DD) is provided.");
+			else if (date < now)
+				throw new Error("Date should not be in past.");
+			return true;
+		}),
 	body('status').isLength({min: 1}).withMessage("This field is required.").isIn(constants.LOAN_INITIAL_STATUSES),
 
 	sanitizeBody('amount').trim().escape(),
@@ -32,6 +44,7 @@ exports.createLoanReqValidator = [
 	sanitizeBody('interestRate').trim().escape(),
 	sanitizeBody('status').trim().escape(),
 	sanitizeBody('loanType').trim().escape(),
+	sanitizeBody('loanDate').trim().escape(),
 
 	async (req, res, next) => {
 		const errors = validationResult(req);
@@ -67,6 +80,14 @@ exports.updateLoanReqValidator = [
 		.isInt().withMessage('This must be an integer value.'),
 	body('interestRate').isLength({min: 1}).withMessage("This field is required.")
 		.isFloat().withMessage('This must be an integer value.'),
+	body('loanDate').isLength({min: 1}).withMessage("This field is required.")
+		.custom((value, {req}) => {
+			const date_str = req.body.loanDate;
+			let date = moment(date_str, "YYYY-MM-DD", true);
+			if(!date.isValid())
+				throw new Error("Invalid date(YYYY-MM-DD) is provided.");
+			return true;
+		}),
 	body('status').isLength({min: 1}).withMessage("This field is required.")
 		.isIn(constants.LOAN_INITIAL_STATUSES)
 		.custom((value, {req}) => {
@@ -81,6 +102,7 @@ exports.updateLoanReqValidator = [
 	sanitizeBody('interestRate').trim().escape(),
 	sanitizeBody('status').trim().escape(),
 	sanitizeBody('loanType').trim().escape(),
+	sanitizeBody('loanDate').trim().escape(),
 
 	// Errors collection
 	(req, res, next) => {

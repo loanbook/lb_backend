@@ -18,23 +18,27 @@ module.exports = {
 			},
       loanType: {
         type: Sequelize.STRING,
-				allowNull: false
+				allowNull: true
       },
       duration: {
         type: Sequelize.INTEGER,
-				allowNull: false
+				allowNull: true
       },
       interestRate: {
         type: Sequelize.INTEGER,
-				allowNull: false
+				allowNull: true
       },
 			amount: {
 				type: Sequelize.FLOAT,
-				allowNull: false
+				allowNull: true
+			},
+			loanDate: {
+      	type: Sequelize.DATEONLY,
+				allowNull: true
 			},
 			status: {
 				type: Sequelize.STRING,
-				allowNull: false,
+				allowNull: true,
 				maxLength: 100
 			},
       createdAt: {
