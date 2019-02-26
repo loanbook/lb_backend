@@ -1,6 +1,5 @@
-const uuidv1 = require('uuid/v1');
 const models = require('../../../models');
-const authHelper = require('../../helpers/authHelper');
+const authHelper = require('../../../helpers/authHelper');
 const borrowerValidators = require('../../../middlewares/apis/admin/borrowersValidator');
 
 
@@ -48,13 +47,15 @@ exports.createBorrowerPost = [
 
 	(req, res, next) => {
 
-		models.User.create({
+		let userInstance = models.User.build({
 			firstName: req.body.firstName,
 			lastName: req.body.lastName,
 			email: req.body.email,
 			isActive: req.isActive,
-			password: authHelper.getPasswordHash(uuidv1())
-		}).then(q_res => {
+		});
+		userInstance.setPassword = null;
+
+		userInstance.save().then(q_res => {
 			models.Borrower.create({
 				userId: q_res.id,
 				businessName: req.body.businessName,
@@ -66,7 +67,6 @@ exports.createBorrowerPost = [
 		}).catch(error => {
 			res.status(500).json({message: error.message})
 		});
-
 	}
 ];
 

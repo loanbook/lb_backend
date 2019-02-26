@@ -1,6 +1,6 @@
 const models = require('../../../models');
 const loanValidators = require('../../../middlewares/apis/admin/loansValidators');
-const installmentHelper = require('../../helpers/installmentsHelper');
+const installmentHelper = require('../../../helpers/installmentsHelper');
 
 /*
 	@param: loan (Loan Model object)

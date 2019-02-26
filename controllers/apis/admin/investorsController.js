@@ -1,8 +1,7 @@
-const uuidv1 = require('uuid/v1');
 const models = require('../../../models');
-const authHelper = require('../../helpers/authHelper');
+const authHelper = require('../../../helpers/authHelper');
 const investorValidators = require('../../../middlewares/apis/admin/investorsValidators');
-const aggregationsHelper = require('../../helpers/aggregationsHelper');
+const aggregationsHelper = require('../../../helpers/aggregationsHelper');
 
 
 exports.listInvestorsGet = async (req, res, next) => {
@@ -46,14 +45,16 @@ exports.createInvestorPost = [
 		let initialDeposit = parseInt(req.body.initialDeposit);
 		let investorProfile = null;
 
+		let userInstance = models.User.build({
+			firstName: req.body.firstName,
+			lastName: req.body.lastName,
+			email: req.body.email,
+			isActive: req.isActive,
+		});
+		userInstance.setPassword = null;
+
 		models.sequelize.transaction((t) => {
-			return models.User.create({
-				firstName: req.body.firstName,
-				lastName: req.body.lastName,
-				email: req.body.email,
-				isActive: req.isActive,
-				password: authHelper.getPasswordHash(uuidv1())
-			}, {transaction: t}).then(user => {
+			return userInstance.save({transaction: t}).then(user => {
 				investorProfile = user;
 				return models.Investor.create({
 					userId: user.id,

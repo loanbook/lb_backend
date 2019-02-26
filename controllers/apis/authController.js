@@ -1,28 +1,20 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
-const bcrypt = require('bcryptjs');
-const { validationResult } = require('express-validator/check');
 const models = require('../../models');
 
 
-exports.registerUserPost = async (req, res, next) => {
-		const formData = req.body;
-		const salt = bcrypt.genSaltSync(10);
-		const hash = bcrypt.hashSync(req.body.password, salt);
-		try{
-			let user = await models.User.create({
-				email: formData.email,
-				password: hash,
-				firstName: formData.firstName,
-				lastName: formData.lastName,
-			});
-			res.status(200).json(user)
-		} catch (e) {
-			res.status(400).json({
-				'errors': 'Unable to create user. Please validate your information.',
-			})
-		}
+exports.registerUserPost = (req, res, next) => {
+	let userInstance = models.User.build({
+		firstName: req.body.firstName,
+		lastName: req.body.lastName,
+		email: req.body.email,
+		isActive: req.isActive,
+	});
+	userInstance.setPassword =req.body.password;
+	userInstance.save().then(user => {
+			res.status(200).json({user: user})
+	}).catch(error => res.status(500).json({message: error}));
 };
 
 

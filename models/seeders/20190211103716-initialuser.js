@@ -1,6 +1,6 @@
 'use strict';
 const crypto = require('crypto');
-const authHelper = require('../../controllers/helpers/authHelper');
+const authHelper = require('../../helpers/authHelper');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 
