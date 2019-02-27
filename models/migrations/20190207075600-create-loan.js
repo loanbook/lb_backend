@@ -36,6 +36,10 @@ module.exports = {
       	type: Sequelize.DATEONLY,
 				allowNull: true
 			},
+			companyPercentage: {
+				type: Sequelize.INTEGER,
+				allowNull: true
+			},
 			status: {
 				type: Sequelize.STRING,
 				allowNull: true,

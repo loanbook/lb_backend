@@ -2,6 +2,7 @@
 const crypto = require('crypto');
 const authHelper = require('../../helpers/authHelper');
 const Sequelize = require('sequelize');
+const moment = require('moment');
 const Op = Sequelize.Op;
 
 
@@ -11,6 +12,9 @@ module.exports = {
       Add altering commands here.
       Return a promise to correctly handle asynchronicity.
     */
+
+		let createdAt = moment().format('YYYY-MM-DD h:mm:ss');
+		let updatedAt = moment().format('YYYY-MM-DD h:mm:ss');
 
     return queryInterface.bulkInsert('Users', [
       // Admin users
@@ -22,8 +26,8 @@ module.exports = {
         isActive: true,
         isSuperuser: true,
         isStaff: true,
-        createdAt: '2019-01-01 00:00:00',
-        updatedAt: '2019-01-01 00:00:00'
+				createdAt: createdAt,
+				updatedAt: updatedAt,
       },
       // Investor Users
       {
@@ -32,8 +36,8 @@ module.exports = {
 				email: 'alex.investor@loanbook.com',
 				password: authHelper.getPasswordHash('123456'),
 				isActive: true,
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00'
+				createdAt: createdAt,
+				updatedAt: updatedAt
       },
       {
         firstName: 'Alina investor',
@@ -41,8 +45,8 @@ module.exports = {
 				email: 'alina.investor@loanbook.com',
 				password: authHelper.getPasswordHash('123456'),
 				isActive: true,
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00'
+				createdAt: createdAt,
+				updatedAt: updatedAt
       },
       {
         firstName: 'Jmima investor',
@@ -50,8 +54,8 @@ module.exports = {
 				email: 'Jmima.investor@loanbook.com',
 				password: authHelper.getPasswordHash('123456'),
 				isActive: true,
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00'
+				createdAt: createdAt,
+				updatedAt: updatedAt
       },
 
       // Borrower Users
@@ -62,8 +66,8 @@ module.exports = {
 				email: 'raselmm.borrower@loanbook.com',
 				password: authHelper.getPasswordHash('123456'),
 				isActive: true,
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00'
+				createdAt: createdAt,
+				updatedAt: updatedAt
 			},
 			{
 				firstName: 'Jbeen TT',
@@ -71,8 +75,8 @@ module.exports = {
 				email: 'Jbeen.borrower@loanbook.com',
 				password: authHelper.getPasswordHash('123456'),
 				isActive: true,
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00'
+				createdAt: createdAt,
+				updatedAt: updatedAt
 			},
 			{
 				firstName: 'Dead TT',
@@ -80,8 +84,8 @@ module.exports = {
 				email: 'dead.borrower@loanbook.com',
 				password: authHelper.getPasswordHash('123456'),
 				isActive: true,
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00'
+				createdAt: createdAt,
+				updatedAt: updatedAt
 			},
     ])
   },

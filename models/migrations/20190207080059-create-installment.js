@@ -24,7 +24,7 @@ module.exports = {
         type: Sequelize.FLOAT
       },
       dueDate: {
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
       },
       status: {
         type: Sequelize.STRING,

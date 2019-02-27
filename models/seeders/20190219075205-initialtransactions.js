@@ -1,5 +1,6 @@
 'use strict';
 
+const moment = require('moment');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const models = require('../index');
@@ -20,10 +21,13 @@ module.exports = {
 			transactions.push({
 				type: 'INVESTMENT_DEPOSIT',
 				amount: 2000 * (index + 1),
+				principalAmount: 2000 * (index + 1),
+				interestAmount: 0,
 				transactionFlow: 'CREDITED',
 				userId: user.id,
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00'
+				comment: 'Initial Test amount',
+				createdAt: moment().format('YYYY-MM-DD h:mm:ss'),
+				updatedAt: moment().format('YYYY-MM-DD h:mm:ss'),
 			})
 		}
 

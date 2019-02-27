@@ -2,6 +2,7 @@
 
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
+const moment = require('moment');
 const models = require('../index');
 
 const borrowersEmail = ['raselmm.borrower@loanbook.com', 'Jbeen.borrower@loanbook.com', 'dead.borrower@loanbook.com'];
@@ -25,11 +26,12 @@ module.exports = {
 				duration: 12 * (index + 1),
 				interestRate: 10,
 				amount: 2000 * (index + 1),
+				companyPercentage: 10,
 				status: 'IN_REVIEW',
 				loanType: 'FIXED_INTEREST',
-				loanDate: '2019-05-01 00:00:00',
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00',
+				loanDate: moment().add(index, 'day').format('YYYY-MM-DD h:mm:ss'),
+				createdAt: moment().format('YYYY-MM-DD h:mm:ss'),
+				updatedAt: moment().format('YYYY-MM-DD h:mm:ss'),
 			})
 		}
 

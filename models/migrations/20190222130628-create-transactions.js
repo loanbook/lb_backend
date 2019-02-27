@@ -24,6 +24,14 @@ module.exports = {
 				},
 				onDelete: 'CASCADE'
       },
+			installmentId: {
+      	type: Sequelize.INTEGER,
+				references:{
+					model: 'Installments',
+					key: 'id',
+				},
+				onDelete: 'CASCADE'
+			},
       type: {
         type: Sequelize.STRING,
         maxLength: 100,
@@ -38,6 +46,14 @@ module.exports = {
         type: Sequelize.FLOAT,
 				allowNull: false,
       },
+			principalAmount: {
+      	type: Sequelize.FLOAT,
+				allowNull: false,
+			},
+			interestAmount: {
+      	type: Sequelize.FLOAT,
+				allowNull: true
+			},
 			comment: {
         type: Sequelize.TEXT,
         allowNull: true,

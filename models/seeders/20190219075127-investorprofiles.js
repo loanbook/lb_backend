@@ -1,4 +1,5 @@
 const Sequelize = require('sequelize');
+const moment = require('moment');
 const Op = Sequelize.Op;
 const models = require('../index');
 
@@ -21,8 +22,8 @@ module.exports = {
 			user_r.push({
 				userId: user.id,
 				location: 'Paris, France',
-				createdAt: '2019-01-01 00:00:00',
-				updatedAt: '2019-01-01 00:00:00'
+				createdAt: moment().format('YYYY-MM-DD h:mm:ss'),
+				updatedAt: moment().format('YYYY-MM-DD h:mm:ss'),
 			})
 		}
 
