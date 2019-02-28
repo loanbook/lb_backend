@@ -6,8 +6,9 @@ module.exports = (sequelize, DataTypes) => {
     principalAmount: DataTypes.FLOAT,
     interestAmount: DataTypes.FLOAT,
     dueAmount: DataTypes.FLOAT,
-    dueDate: DataTypes.DATE,
-    status: DataTypes.STRING
+    dueDate: DataTypes.DATEONLY,
+    status: DataTypes.STRING,
+    paidAt: DataTypes.DATEONLY
   }, {});
   Installment.associate = function(models) {
     // associations can be defined here

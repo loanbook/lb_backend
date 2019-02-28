@@ -30,6 +30,10 @@ module.exports = {
         type: Sequelize.STRING,
         maxLength: 100
       },
+      paidAt: {
+        type: Sequelize.DATEONLY,
+        allowNull: true
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

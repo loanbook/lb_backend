@@ -2,6 +2,9 @@ const moment = require('moment');
 const models = require('../../../models');
 const loanValidators = require('../../../middlewares/apis/admin/loansValidators');
 const installmentHelper = require('../../../helpers/installmentsHelper');
+const utilHelper = require('../../../helpers/util');
+
+const roundAmount = utilHelper.roundAmount;
 
 /*
 	@param: loan (Loan Model object)
@@ -20,10 +23,10 @@ addLoanInstallments = async (loan) => {
 		let installment = installments[index];
 		instData.push({
 			loanId: loan.id,
-			payableAmount: installment.payment,
-			principalAmount: installment.principal,
-			interestAmount: installment.interest,
-			dueAmount: installment.balance,
+			payableAmount: roundAmount(installment.payment),
+			principalAmount: roundAmount(installment.principal),
+			interestAmount: roundAmount(installment.interest),
+			dueAmount: roundAmount(installment.balance),
 			dueDate: installment.due_date,
 			status: installment.tracking,
 		})
