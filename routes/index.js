@@ -1,9 +1,11 @@
-var express = require('express');
-var router = express.Router();
+const apiRoutes = require('./apis');
 
-var indexController = require('../controllers/indexController');
+const homeRoutes = require('./home');
 
-/* GET home page. */
-router.get('/', indexController.index_page_get);
+module.exports = (app) => {
 
-module.exports = router;
+	apiRoutes(app);
+
+	app.use('/', homeRoutes);
+
+};
