@@ -32,27 +32,38 @@ module.exports = {
 				},
 				onDelete: 'CASCADE'
 			},
-      type: {
-        type: Sequelize.STRING,
-        maxLength: 100,
-				allowNull: false
-      },
-			transactionFlow: {
-      	type: Sequelize.STRING,
-				maxLength: 100,
-				allowNull: false
-			},
       amount: {
         type: Sequelize.FLOAT,
 				allowNull: false,
+				defaultValue: 0
       },
 			principalAmount: {
       	type: Sequelize.FLOAT,
 				allowNull: false,
+				defaultValue: 0
 			},
 			interestAmount: {
+				type: Sequelize.FLOAT,
+				allowNull: true,
+				defaultValue: 0
+			},
+			loanInterestAmount: {
       	type: Sequelize.FLOAT,
-				allowNull: true
+				defaultValue: 0
+			},
+			companyInterestAmount: {
+      	type: Sequelize.FLOAT,
+				defaultValue: 0
+			},
+			type: {
+				type: Sequelize.STRING,
+				maxLength: 100,
+				allowNull: false
+			},
+			transactionFlow: {
+				type: Sequelize.STRING,
+				maxLength: 100,
+				allowNull: false
 			},
 			comment: {
         type: Sequelize.TEXT,

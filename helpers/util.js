@@ -4,5 +4,16 @@ exports.roundAmount = (amount, afterPoint=4) => {
 	amount = parseFloat(amount);
 	if(!amount)
 		amount = 0;
-	return Number.parseFloat(amount).toFixed(afterPoint);
+	return parseFloat(amount.toFixed(afterPoint));
+};
+
+
+exports.getPercentage = (total, percent, dec=4) => {
+	total = parseFloat(total);
+	percent = parseFloat(percent);
+
+	if(total && percent){
+		return parseFloat((percent/100 * total).toFixed(dec));
+	}
+	return NaN;
 };

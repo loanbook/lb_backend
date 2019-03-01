@@ -4,7 +4,7 @@ const validator = require('../../../middlewares/apis/admin/installmentsValidator
 const untilHelper = require('../../../helpers/util');
 
 const amountRound = untilHelper.roundAmount;
-
+const getPercentage = untilHelper.getPercentage;
 
 exports.installmentsListGet = (req, res, next) => {
 	models.Installment.findAll({
@@ -46,37 +46,43 @@ exports.payInstallmentPost = [
 
 		let interestAmount = 0;
 		let principleAmount = 0;
+		let companyPercentage = 0;
+		let loanPercentage = 0;
 
-		let paidAmount = aggregation.dataValues.paidPrincipalAmount;
+		let paidAmount = aggregation.dataValues.paidAmount;
 		let paidInterest = aggregation.dataValues.paidInterestAmount;
 		let paidPrinciple = aggregation.dataValues.paidPrincipalAmount;
 
-		paidAmount = (paidAmount) ? parseFloat(aggregation.dataValues.paidPrincipalAmount) : 0;
+		paidAmount = (paidAmount) ? parseFloat(paidAmount) : 0;
 		paidInterest = (paidInterest) ? parseFloat(paidInterest) : 0;
 		paidPrinciple = (paidPrinciple) ? parseFloat(paidPrinciple) : 0;
 
 		let remainingAmount = installment.payableAmount - paidAmount;
 		let remainingInterest = installment.interestAmount - paidInterest;
-		let remainingPrinciple = installment.principalAmount - principleAmount;
+		let remainingPrinciple = installment.principalAmount - paidPrinciple;
 
 
-		if(amountToPay >= remainingAmount){
+		if(amountToPay >= amountRound(remainingAmount)){
 			installment.status = 'PAID';
 			installment.paidAt = moment().format('YYYY-MM-DD');
 			interestAmount = remainingInterest;
 			principleAmount = remainingPrinciple;
 		}
-		else if(amountToPay >= remainingInterest ){
-			interestAmount = amountToPay - remainingInterest;
+		else if(amountToPay >= amountRound(remainingInterest) ){
+			interestAmount = remainingInterest;
 			principleAmount = amountToPay - interestAmount;
 		}
 		else{
-			interestAmount = remainingInterest - amountToPay;
+			interestAmount = amountToPay;
 			principleAmount = 0;
 		}
 
 		interestAmount = amountRound(interestAmount);
 		principleAmount = amountRound(principleAmount);
+		companyPercentage = getPercentage(interestAmount, req.loan.companyPercentage);
+		companyPercentage = (!companyPercentage) ? 0 : companyPercentage;
+		loanPercentage = interestAmount - companyPercentage;
+		loanPercentage = amountRound(loanPercentage);
 
 		models.sequelize.transaction((t) => {
 			return installment.save({transaction: t}).then(installment_q => {
@@ -87,8 +93,10 @@ exports.payInstallmentPost = [
 						userId: req.loan.Borrower.userId,
 						installmentId: installment.id,
 						amount: amountToPay,
-						interestAmount: interestAmount,
 						principalAmount: principleAmount,
+						interestAmount: interestAmount,
+						loanInterestAmount: loanPercentage,
+						companyInterestAmount: companyPercentage,
 						transactionFlow: 'DEBITED',
 						type: 'LOAN_RETURN',
 						comment: 'Borrower returned loan amount.'
@@ -96,8 +104,10 @@ exports.payInstallmentPost = [
 						loanId: req.loan.id,
 						installmentId: installment.id,
 						amount: amountToPay,
-						interestAmount: interestAmount,
 						principalAmount: principleAmount,
+						interestAmount: interestAmount,
+						loanInterestAmount: loanPercentage,
+						companyInterestAmount: companyPercentage,
 						transactionFlow: 'CREDITED',
 						type: 'LOAN_RETURN',
 						comment: 'Borrower returned loan amount.'
@@ -109,7 +119,18 @@ exports.payInstallmentPost = [
 
 			models.Transaction.findAll({where: {installmentId: installment.id}, order: [['id', 'DESC']], limit: 2})
 				.then(tran => {
-					res.status(200).json({installment: installment, transaction: tran})
+					models.Installment.findAndCountAll({
+						where: {loanId: req.loan.id, status: 'PAYMENT_DUE'}
+					}).then(result => {
+						if (!result.count) {
+							req.loan.status = 'TERMINATED';
+							req.loan.save().then(loan => {
+								res.status(200).json({installment: installment, transaction: tran, loan: loan})
+							})
+						} else {
+							res.status(200).json({installment: installment, transaction: tran})
+						}
+					});
 				})
 		}).catch(error => {
 			res.status(500).json({message: error})

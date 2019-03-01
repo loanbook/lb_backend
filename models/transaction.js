@@ -9,19 +9,26 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
     },
     loanId: DataTypes.INTEGER,
-    type: DataTypes.STRING,
-    transactionFlow: {
-      type: DataTypes.STRING,
-			isIn: contants.TRANSACTION_FLOW_TYPES
-    },
+
     amount:{
+      type: DataTypes.FLOAT,
+    },
+		principalAmount: {
       type: DataTypes.FLOAT,
     },
     interestAmount: {
       type: DataTypes.FLOAT,
     },
-		principalAmount: {
+    loanInterestAmount: {
       type: DataTypes.FLOAT,
+    },
+    companyInterestAmount: {
+      type: DataTypes.FLOAT,
+    },
+    type: DataTypes.STRING,
+    transactionFlow: {
+      type: DataTypes.STRING,
+      isIn: contants.TRANSACTION_FLOW_TYPES
     },
     comment: DataTypes.TEXT
   }, {});

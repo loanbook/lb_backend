@@ -70,7 +70,7 @@ exports.finalAmortSchedule = (duration, initialDate, interest, capital) => {
 		} else {
 			amortization_pmt = {
 				number: i,
-				payment: payment,
+				payment: parseFloat(payment) + parseFloat(capital),
 				interest: interest,
 				principal: capital,
 				balance: 0,
