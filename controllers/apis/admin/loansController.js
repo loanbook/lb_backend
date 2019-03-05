@@ -32,7 +32,7 @@ addLoanInstallments = async (loan) => {
 		})
 	}
 	let q_installments = await models.Installment.bulkCreate(instData);
-	return await models.Installment.findAll({where: {loanId: loan.id}});
+	return await models.Installment.findAll({ where: { loanId: loan.id } });
 };
 
 
@@ -40,12 +40,12 @@ exports.listLoansGet = [
 	async (req, res, next) => {
 		models.Loan.findAll({
 			include: [
-				{model: models.Borrower}
+				{ model: models.Borrower }
 			]
 		}).then(q_res => {
-			res.status(200).json({loans: q_res});
+			res.status(200).json({ loans: q_res });
 		}).catch(error => {
-			res.status(500).json({message: error.message});
+			res.status(500).json({ message: error.message });
 		})
 	}
 ];
@@ -54,19 +54,36 @@ exports.detailLoanGet = [
 	async (req, res, next) => {
 		const loanId = req.params.id;
 		models.Loan.findOne({
-			where: {id: loanId},
+			where: { id: loanId },
 			include: [
-				{model: models.Borrower},
-				{model: models.Installment},
-			]
+				{ model: models.Borrower },
+				{ model: models.Installment },
+			],
 		}).then(q_res => {
-			if(!q_res){
-				res.status(404).json({message: 'No loan is found against provided loan id.'})
-			}else{
-				res.status(200).json({loan: q_res});
+			if (!q_res) {
+				res.status(404).json({ message: 'No loan is found against provided loan id.' })
+			} else {
+				models.Transaction.findOne({
+					where: { loanId: loanId, userId: null },
+					attributes: [
+						[models.sequelize.fn('SUM', models.sequelize.col('interestAmount')), 'paid_amount'],
+						[models.sequelize.fn('COUNT', models.sequelize.col('amount')), 'total_paid_installments'],
+					]
+				}).then(
+					tp_res => {
+						if (!tp_res) {
+							res.status(200).json({ loan: q_res });
+						} else {
+							q_res.dataValues.total_paid_amount = tp_res.dataValues.paid_amount;
+							q_res.dataValues.total_paid_installments = tp_res.dataValues.total_paid_installments;
+							res.status(200).json({ loan: q_res });
+						}
+					}
+				)
+				// res.status(200).json({ loan: q_res });
 			}
 		}).catch(error => {
-			res.status(500).json({message: error.message});
+			res.status(500).json({ message: error.message });
 		});
 	}
 ];
@@ -82,9 +99,9 @@ exports.createLoanPost = [
 		let status = 'IN_REVIEW';
 		let transactions = [];
 
-		if(date.isSame(currentDate, 'Date')){
+		if (date.isSame(currentDate, 'Date')) {
 			status = 'OPEN'
-		}else{
+		} else {
 			status = req.body.status;
 		}
 
@@ -99,10 +116,10 @@ exports.createLoanPost = [
 			companyPercentage: req.body.companyPercentage
 		}).then(q_res => {
 			q_res.dataValues.Borrower = req.borrower;
-			if(q_res.status === 'APPROVED' || q_res.status === 'OPEN'){
+			if (q_res.status === 'APPROVED' || q_res.status === 'OPEN') {
 				addLoanInstallments(q_res).then(installments => {
 					q_res.dataValues.Installment = installments;
-					if(status === 'OPEN'){
+					if (status === 'OPEN') {
 						models.sequelize.transaction(((t) => {
 							return models.Transaction.create({
 								loanId: q_res.id,
@@ -112,7 +129,7 @@ exports.createLoanPost = [
 								principalAmount: q_res.amount,
 								interestAmount: 0,
 								comment: 'Loan Transaction.'
-							}, {transaction: t}).then(t1 => {
+							}, { transaction: t }).then(t1 => {
 								transactions.push(t1);
 								return models.Transaction.create({
 									userId: req.borrower.userId,
@@ -123,22 +140,22 @@ exports.createLoanPost = [
 									principalAmount: q_res.amount,
 									interestAmount: 0,
 									comment: 'Loan Transaction.'
-								}, {transactions: t})
+								}, { transactions: t })
 							})
 						})).then(t2 => {
 							transactions.push(t2);
-							res.status(200).json({loan: q_res, transactions: transactions})
+							res.status(200).json({ loan: q_res, transactions: transactions })
 						})
-					}else{
-						res.status(200).json({loan: q_res});
+					} else {
+						res.status(200).json({ loan: q_res });
 					}
 
 				});
-			}else{
-				res.status(200).json({loan: q_res});
+			} else {
+				res.status(200).json({ loan: q_res });
 			}
 		}).catch(error => {
-			res.status(500).json({message: error.message});
+			res.status(500).json({ message: error.message });
 		});
 	}
 ];
@@ -156,9 +173,9 @@ exports.updateLoanPut = [
 		let status = 'IN_REVIEW';
 		let transactions = [];
 
-		if(date.isSame(currentDate, 'Date')){
+		if (date.isSame(currentDate, 'Date')) {
 			status = 'OPEN'
-		}else{
+		} else {
 			status = req.body.status;
 		}
 
@@ -173,10 +190,10 @@ exports.updateLoanPut = [
 
 		loan.save().then(q_res => {
 			q_res.dataValues.Borrower = req.borrower;
-			if(q_res.status === 'APPROVED' || q_res.status === 'OPEN'){
+			if (q_res.status === 'APPROVED' || q_res.status === 'OPEN') {
 				addLoanInstallments(q_res).then(installments => {
 					q_res.dataValues.Installment = installments;
-					if(status === 'OPEN'){
+					if (status === 'OPEN') {
 						models.sequelize.transaction(((t) => {
 							return models.Transaction.create({
 								loanId: q_res.id,
@@ -186,7 +203,7 @@ exports.updateLoanPut = [
 								principalAmount: q_res.amount,
 								interestAmount: 0,
 								comment: 'Loan Transaction.'
-							}, {transaction: t}).then(t1 => {
+							}, { transaction: t }).then(t1 => {
 								transactions.push(t1);
 								return models.Transaction.create({
 									userId: req.borrower.userId,
@@ -197,22 +214,22 @@ exports.updateLoanPut = [
 									principalAmount: q_res.amount,
 									interestAmount: 0,
 									comment: 'Loan Transaction.'
-								}, {transactions: t})
+								}, { transactions: t })
 							})
 						})).then(t2 => {
 							transactions.push(t2);
-							res.status(200).json({loan: q_res, transactions: transactions})
+							res.status(200).json({ loan: q_res, transactions: transactions })
 						})
-					}else{
-						res.status(200).json({loan: q_res});
+					} else {
+						res.status(200).json({ loan: q_res });
 					}
 
 				});
-			}else{
-				res.status(200).json({loan: q_res});
+			} else {
+				res.status(200).json({ loan: q_res });
 			}
 		}).catch(error => {
-			res.status(500).json({message: error.message})
+			res.status(500).json({ message: error.message })
 		})
 	}
 ];
@@ -221,16 +238,16 @@ exports.updateLoanPut = [
 exports.loanDelete = [
 	async (req, res, next) => {
 		const loanId = req.params.id;
-		models.Loan.findOne({where: {id: loanId}}).then(q_res => {
-			if(!q_res){
-				res.status(400).json({message: 'No loan is found against provided loan id.'})
-			}else{
+		models.Loan.findOne({ where: { id: loanId } }).then(q_res => {
+			if (!q_res) {
+				res.status(400).json({ message: 'No loan is found against provided loan id.' })
+			} else {
 				q_res.destroy().then(dq_res => {
-					res.status(200).json({message: 'Loan has been deleted successfully.', loan: q_res})
+					res.status(200).json({ message: 'Loan has been deleted successfully.', loan: q_res })
 				})
 			}
 		}).catch(error => {
-			res.status(500).json({message: error.message});
+			res.status(500).json({ message: error.message });
 		});
 	}
 ];
