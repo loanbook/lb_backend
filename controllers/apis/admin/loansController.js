@@ -3,6 +3,7 @@ const models = require('../../../models');
 const loanValidators = require('../../../middlewares/apis/admin/loansValidators');
 const installmentHelper = require('../../../helpers/installmentsHelper');
 const utilHelper = require('../../../helpers/util');
+const aggrigationsHelper = require('../../../helpers/aggregationsHelper');
 
 const roundAmount = utilHelper.roundAmount;
 
@@ -53,38 +54,26 @@ exports.listLoansGet = [
 exports.detailLoanGet = [
 	async (req, res, next) => {
 		const loanId = req.params.id;
-		models.Loan.findOne({
+		let loanDetail = await models.Loan.findOne({
 			where: { id: loanId },
 			include: [
 				{ model: models.Borrower },
 				{ model: models.Installment },
 			],
-		}).then(q_res => {
-			if (!q_res) {
-				res.status(404).json({ message: 'No loan is found against provided loan id.' })
-			} else {
-				models.Transaction.findOne({
-					where: { loanId: loanId, userId: null },
-					attributes: [
-						[models.sequelize.fn('SUM', models.sequelize.col('interestAmount')), 'paid_amount'],
-						[models.sequelize.fn('COUNT', models.sequelize.col('amount')), 'total_paid_installments'],
-					]
-				}).then(
-					tp_res => {
-						if (!tp_res) {
-							res.status(200).json({ loan: q_res });
-						} else {
-							q_res.dataValues.total_paid_amount = tp_res.dataValues.paid_amount;
-							q_res.dataValues.total_paid_installments = tp_res.dataValues.total_paid_installments;
-							res.status(200).json({ loan: q_res });
-						}
-					}
-				)
-				// res.status(200).json({ loan: q_res });
-			}
-		}).catch(error => {
-			res.status(500).json({ message: error.message });
 		});
+		if (loanDetail) {
+			let laon_aggregation_res = await aggrigationsHelper.updateLoanAggregations(loanId)
+			if (laon_aggregation_res) {
+				loanDetail.dataValues.total_paid_amount = laon_aggregation_res.dataValues.paid_amount;
+				loanDetail.dataValues.total_paid_installments = laon_aggregation_res.dataValues.total_paid_installments;
+				loanDetail.dataValues.late_installment_fee = await aggrigationsHelper.fetchLateInstallmentFee(loanId);
+				loanDetail.dataValues.late_interest_till_today = await aggrigationsHelper.fetchLateInterestTillToday(loanId);
+				res.status(200).json({ loan: loanDetail });
+			}
+			else res.status(200).json({ loan: loanDetail });
+
+		}
+		else res.status(404).json({ message: 'No loan is found against provided loan id.' })
 	}
 ];
 

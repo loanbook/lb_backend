@@ -1,7 +1,7 @@
 const models = require('../../../models');
 const authHelper = require('../../../helpers/authHelper');
 const borrowerValidators = require('../../../middlewares/apis/admin/borrowersValidator');
-
+const aggrigationsHelper = require('../../../helpers/aggregationsHelper');
 
 exports.listBorrowersGet = [
 	(req, res, next) => {
@@ -9,35 +9,40 @@ exports.listBorrowersGet = [
 			include: [
 				{
 					model: models.Borrower,
-					where: {userId: {[models.Sequelize.Op.not]: null}}
+					where: { userId: { [models.Sequelize.Op.not]: null } }
 				}
 			],
 		}).then(q_res => {
-			res.status(200).json({borrowers: q_res})
+			res.status(200).json({ borrowers: q_res })
 		}).catch(error => {
-			res.status(500).json({message: error.message})
+			res.status(500).json({ message: error.message })
 		});
 	}
 ];
 
 
 exports.detailBorrowerGet = [
-	(req, res, next) => {
-
+	async (req, res, next) => {
 		const borrowerId = req.params.id;
-		let investor = models.User.findByPk(borrowerId, {
+		let borrowerDetail = await models.User.findByPk(borrowerId, {
 			include: [
 				{
 					model: models.Borrower,
-					where: {userId: {[models.Sequelize.Op.not]: null}}
+					where: { userId: { [models.Sequelize.Op.not]: null } },
 				}
 			]
-		}).then(q_res => {
-			if(q_res) res.status(200).json({borrower: q_res});
-			else res.status(404).json({message: 'No borrower found with provided borrower id.'})
-		}).catch(error => {
-			res.status(500).json({message: error.message})
 		});
+		if (borrowerDetail) {
+			let borrowerAggregationRes = await aggrigationsHelper.updateBorrowerAggregations(borrowerId);
+			if (borrowerAggregationRes) {
+				borrowerDetail.dataValues.total_borrowed_amount = borrowerAggregationRes.total_borrowed_amount;
+				borrowerDetail.dataValues.remaining_borrowed_amount = borrowerAggregationRes.remaining_borrowed_amount;
+				borrowerDetail.dataValues.total_amount_return = borrowerAggregationRes.total_amount_return;
+				res.status(200).json({ loan: borrowerDetail });
+			}
+			else res.status(200).json({ loan: borrowerDetail });
+		}
+		else res.status(404).json({ message: 'No borrower found with provided borrower id.' })
 	}
 ];
 
@@ -62,10 +67,10 @@ exports.createBorrowerPost = [
 				description: req.body.description
 			}).then(bq_res => {
 				q_res.dataValues.Borrower = bq_res;
-				res.status(200).json({borrower: q_res});
+				res.status(200).json({ borrower: q_res });
 			})
 		}).catch(error => {
-			res.status(500).json({message: error.message})
+			res.status(500).json({ message: error.message })
 		});
 	}
 ];
@@ -83,13 +88,13 @@ exports.updateBorrowerPut = [
 		borrower.isActive = req.body.isActive;
 
 		borrower.save().then(q_res => {
-			if(req.body.description){borrower.Borrower.description = req.body.description;}
+			if (req.body.description) { borrower.Borrower.description = req.body.description; }
 			borrower.Borrower.businessName = req.body.businessName;
 			borrower.save().then(bq_res => {
-				res.status(200).json({borrower: q_res});
+				res.status(200).json({ borrower: q_res });
 			})
 		}).catch(error => {
-			res.status(500).json({message: error.message})
+			res.status(500).json({ message: error.message })
 		})
 	}
 ];
@@ -102,18 +107,18 @@ exports.loanBorrowerDelete = [
 			include: [
 				{
 					model: models.Borrower,
-					where: {userId: {[models.Sequelize.Op.not]: null}}
+					where: { userId: { [models.Sequelize.Op.not]: null } }
 				}
 			]
 		}).then(q_res => {
-			if(q_res){
+			if (q_res) {
 				q_res.destroy().then(dq_res => {
-					res.status(200).json({message: "Borrower has been deleted successfully."})
+					res.status(200).json({ message: "Borrower has been deleted successfully." })
 				})
 			}
-			else res.status(404).json({message: 'No borrower found with provided borrower id.'})
+			else res.status(404).json({ message: 'No borrower found with provided borrower id.' })
 		}).catch(error => {
-			res.status(500).json({message: error.message})
+			res.status(500).json({ message: error.message })
 		});
 	}
 ];

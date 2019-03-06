@@ -9,11 +9,11 @@ exports.listInvestorsGet = async (req, res, next) => {
 		include: [
 			{
 				model: models.Investor,
-				where: {userId: {[models.Sequelize.Op.not]: null}}
+				where: { userId: { [models.Sequelize.Op.not]: null } }
 			}
 		],
 	});
-	res.status(200).json({investors});
+	res.status(200).json({ investors });
 };
 
 
@@ -24,15 +24,17 @@ exports.detialInvestorGet = [
 			include: [
 				{
 					model: models.Investor,
-					where: {userId: {[models.Sequelize.Op.not]: null}}
+					where: { userId: { [models.Sequelize.Op.not]: null } }
 				}
 			]
 		});
-		if(investor){
+		if (investor) {
 			investor.dataValues.investment = await aggregationsHelper.fetchInvestorInvestment(investor.id);
-			res.status(200).json({investor});
+			investor.dataValues.investorPercentage = await aggregationsHelper.fetchInvestorPercentage(investor.id);
+			investor.dataValues.investorPoolShare = await aggregationsHelper.fetchInvestorPoolShare(investor.id);
+			res.status(200).json({ investor });
 		}
-		else res.status(404).json({message: 'No investor found with provided investor id.'})
+		else res.status(404).json({ message: 'No investor found with provided investor id.' })
 	}
 ];
 
@@ -54,28 +56,28 @@ exports.createInvestorPost = [
 		userInstance.setPassword = null;
 
 		models.sequelize.transaction((t) => {
-			return userInstance.save({transaction: t}).then(user => {
+			return userInstance.save({ transaction: t }).then(user => {
 				investorProfile = user;
 				return models.Investor.create({
 					userId: user.id,
 					location: req.body.location,
-				}, {transaction: t})
+				}, { transaction: t })
 			})
 		}).then(result => {
 			investorProfile.dataValues.Investor = result;
 			const initialDeposit = parseInt(req.body.initialBalance);
-			if(initialDeposit){
+			if (initialDeposit) {
 				models.Transaction.create({
 					userId: result.userId, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: initialDeposit,
 					comment: 'Initial deposit'
 				}).then(trans => {
-					res.status(200).json({investor: investorProfile, transaction: trans})
+					res.status(200).json({ investor: investorProfile, transaction: trans })
 				})
-			}else{
-				res.status(200).json({investor: investorProfile})
+			} else {
+				res.status(200).json({ investor: investorProfile })
 			}
 		}).catch(error => {
-			res.status(500).json({error: error.message})
+			res.status(500).json({ error: error.message })
 		});
 	}
 ];
@@ -95,10 +97,10 @@ exports.updateInvestorPut = [
 		investor.save().then(user => {
 			investor.Investor.location = req.body.location;
 			investor.Investor.save().then(q_investor => {
-				res.status(200).json({investor: investor})
+				res.status(200).json({ investor: investor })
 			})
 		}).catch(error => {
-			res.status(500).json({message: error.message})
+			res.status(500).json({ message: error.message })
 		});
 
 	}
@@ -113,8 +115,8 @@ exports.investorAddDeposit = [
 			userId: req.investor.id, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: parseInt(req.body.amount),
 			comment: 'Deposit'
 		}).then(trans => {
-			res.status(200).json({transaction: trans, investor: req.investor})
-		}).catch(error=>res.status(500).json({message: error.message}))
+			res.status(200).json({ transaction: trans, investor: req.investor })
+		}).catch(error => res.status(500).json({ message: error.message }))
 	}
 ];
 
@@ -124,17 +126,17 @@ exports.investorDelete = async (req, res, next) => {
 		include: [
 			{
 				model: models.Investor,
-				where: {userId: {[models.Sequelize.Op.not]: null}}
+				where: { userId: { [models.Sequelize.Op.not]: null } }
 			}
 		]
 	});
 
-	if(!investor){ res.status(404).json({message: 'No investor found with provided investor id.'});}
+	if (!investor) { res.status(404).json({ message: 'No investor found with provided investor id.' }); }
 	else {
 		investor.destroy().then((q_data) => {
-			res.status(200).json({'message': 'Investor has been deleted successfully.'})
+			res.status(200).json({ 'message': 'Investor has been deleted successfully.' })
 		}).catch((error) => {
-			res.status(500).json({'message': "Unable to delete investor"})
+			res.status(500).json({ 'message': "Unable to delete investor" })
 		})
 	}
 };
