@@ -22,6 +22,9 @@ module.exports = (sequelize, DataTypes) => {
     loanInterestAmount: {
       type: DataTypes.FLOAT,
     },
+    installmentLateFee: {
+      type: DataTypes.FLOAT,
+    },
     companyInterestAmount: {
       type: DataTypes.FLOAT,
     },

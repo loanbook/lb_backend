@@ -67,7 +67,7 @@ exports.detailLoanGet = [
 				loanDetail.dataValues.total_paid_amount = laon_aggregation_res.dataValues.paid_amount;
 				loanDetail.dataValues.total_paid_installments = laon_aggregation_res.dataValues.total_paid_installments;
 				loanDetail.dataValues.late_installment_fee = await aggrigationsHelper.fetchLateInstallmentFee(loanId);
-				loanDetail.dataValues.late_interest_till_today = await aggrigationsHelper.fetchLateInterestTillToday(loanId);
+				loanDetail.dataValues.installment_interest_till_today = await aggrigationsHelper.fetchInstallmentInterestTillToday(loanId);
 				res.status(200).json({ loan: loanDetail });
 			}
 			else res.status(200).json({ loan: loanDetail });

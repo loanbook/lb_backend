@@ -1,4 +1,10 @@
 const models = require('../models/index');
+const moment = require('moment');
+
+const utilHelper = require('./util');
+
+const amountRound = utilHelper.roundAmount;
+const calculatePercentage = utilHelper.getPercentage;
 
 
 totalInvestorInvested = async (investorId) => {
@@ -63,7 +69,7 @@ fetchInvestorPercentage = async (investorId) => {
 fetchInvestorPoolShare = async (investorId) => {
 	let investorPercentage = await fetchInvestorPercentage(investorId);
 	let poolCurrentAmount = await cashPool();
-	return investorPoolShare = poolCurrentAmount * (investorPercentage / 100)
+	return investorPoolShare = amountRound(poolCurrentAmount * (investorPercentage / 100))
 };
 
 totalInvestmentsTillNow = async () => {
@@ -126,19 +132,24 @@ updateBorrowerAggregations = async (userId) => {
 }
 
 fetchLateInstallmentFee = async (loanId) => {
-	return 0 // --todo: include late fee
+	let loanDetail = await models.Loan.findOne({
+		where: { id: loanId },
+	});
+	return loanDetail.amount ? calculatePercentage(loanDetail.amount, 1) : 0; // --todo: include late fee
 };
-fetchLateInterestTillToday = async (loanId) => {
+fetchInstallmentInterestTillToday = async (loanId) => {
 	let installmentDetail = await models.Installment.findOne({
 		where: { loanId: loanId, status: 'PAYMENT_DUE' },
 	});
-	let installmentInterestPerDay = installmentDetail.interestAmount / 30; // --todo: change according to month and payment
-	let dueDate = new Date(installmentDetail.dueDate);
-	let currentDate = new Date();
+	let installmentInterestPerDay = 0;
 	let numberOfdays = 0;
-	if (currentDate > dueDate)
-		numberOfdays = parseInt((currentDate - dueDate) / (24 * 3600 * 1000))
-	// let numberOfdays = currentDate - dueDate;
+	if (installmentDetail) {
+		installmentInterestPerDay = installmentDetail.interestAmount / 30; // --todo: change according to month and payment
+		let installmentDueDate = moment(installmentDetail.dueDate);
+		let currentDate = moment();
+		if (currentDate > installmentDueDate)
+			numberOfdays = currentDate.diff(installmentDueDate, 'days');
+	}
 	return installmentInterestPerDay * numberOfdays;
 };
 
@@ -152,7 +163,7 @@ module.exports = {
 	totalInvestmentsTillNow: totalInvestmentsTillNow,
 	totalDebitedTilNow: totalDebitedTilNow,
 	fetchLateInstallmentFee: fetchLateInstallmentFee,
-	fetchLateInterestTillToday: fetchLateInterestTillToday,
+	fetchInstallmentInterestTillToday: fetchInstallmentInterestTillToday,
 	updateLoanAggregations: updateLoanAggregations,
 	updateBorrowerAggregations: updateBorrowerAggregations,
 };

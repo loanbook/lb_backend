@@ -10,9 +10,9 @@ exports.installmentsListGet = (req, res, next) => {
 	models.Installment.findAll({
 		order: ['dueDate'],
 	}).then(installments => {
-		res.status(200).json({installments: installments});
+		res.status(200).json({ installments: installments });
 	}).catch(error => {
-		res.status(500).json({message: error.message});
+		res.status(500).json({ message: error.message });
 	})
 };
 
@@ -21,17 +21,19 @@ exports.installmentDetailGet = (req, res, next) => {
 	const installmentId = req.params.id;
 	models.Installment.findByPk(installmentId, {
 		include: [
-			{model: models.Loan, include:[
-					{model: models.Borrower}
-				]}
+			{
+				model: models.Loan, include: [
+					{ model: models.Borrower }
+				]
+			}
 		]
 	}).then(installment => {
-		if(installment)
-			res.status(200).json({installment: installment});
+		if (installment)
+			res.status(200).json({ installment: installment });
 		else
-			res.status(400).json({message: 'Not installment found with provided id.'})
+			res.status(400).json({ message: 'Not installment found with provided id.' })
 	}).catch(error => {
-		res.status(500).json({message: error.message});
+		res.status(500).json({ message: error.message });
 	})
 };
 
@@ -62,19 +64,28 @@ exports.payInstallmentPost = [
 		let remainingPrinciple = installment.principalAmount - paidPrinciple;
 
 
-		if(amountToPay >= amountRound(remainingAmount)){
+		if (amountToPay >= amountRound(remainingAmount)) {
 			installment.status = 'PAID';
 			installment.paidAt = moment().format('YYYY-MM-DD');
 			interestAmount = remainingInterest;
 			principleAmount = remainingPrinciple;
 		}
-		else if(amountToPay >= amountRound(remainingInterest) ){
+		else if (amountToPay >= amountRound(remainingInterest)) {
 			interestAmount = remainingInterest;
 			principleAmount = amountToPay - interestAmount;
 		}
-		else{
+		else {
 			interestAmount = amountToPay;
 			principleAmount = 0;
+		}
+
+		//check for late installment
+		let installmentLateFee = 0
+		let installmentDueDate = moment(installment.dueDate);
+		let currentDate = moment();
+		if (currentDate.diff(installmentDueDate, 'days') > 5) {
+			installmentLateFee = installment.principleAmount * (1 / 100);
+			amountToPay = amountToPay + installmentLateFee
 		}
 
 		interestAmount = amountRound(interestAmount);
@@ -85,7 +96,7 @@ exports.payInstallmentPost = [
 		loanPercentage = amountRound(loanPercentage);
 
 		models.sequelize.transaction((t) => {
-			return installment.save({transaction: t}).then(installment_q => {
+			return installment.save({ transaction: t }).then(installment_q => {
 				installment = installment_q;
 				return models.Transaction.bulkCreate([
 					{
@@ -96,44 +107,46 @@ exports.payInstallmentPost = [
 						principalAmount: principleAmount,
 						interestAmount: interestAmount,
 						loanInterestAmount: loanPercentage,
+						installmentLateFee: installmentLateFee,
 						companyInterestAmount: companyPercentage,
 						transactionFlow: 'DEBITED',
 						type: 'LOAN_RETURN',
 						comment: 'Borrower returned loan amount.'
-					},{
+					}, {
 						loanId: req.loan.id,
 						installmentId: installment.id,
 						amount: amountToPay,
 						principalAmount: principleAmount,
 						interestAmount: interestAmount,
+						installmentLateFee: installmentLateFee,
 						loanInterestAmount: loanPercentage,
 						companyInterestAmount: companyPercentage,
 						transactionFlow: 'CREDITED',
 						type: 'LOAN_RETURN',
 						comment: 'Borrower returned loan amount.'
 					}
-				], {transaction: t})
+				], { transaction: t })
 			})
 
 		}).then(last_result => {
 
-			models.Transaction.findAll({where: {installmentId: installment.id}, order: [['id', 'DESC']], limit: 2})
+			models.Transaction.findAll({ where: { installmentId: installment.id }, order: [['id', 'DESC']], limit: 2 })
 				.then(tran => {
 					models.Installment.findAndCountAll({
-						where: {loanId: req.loan.id, status: 'PAYMENT_DUE'}
+						where: { loanId: req.loan.id, status: 'PAYMENT_DUE' }
 					}).then(result => {
 						if (!result.count) {
 							req.loan.status = 'TERMINATED';
 							req.loan.save().then(loan => {
-								res.status(200).json({installment: installment, transaction: tran, loan: loan})
+								res.status(200).json({ installment: installment, transaction: tran, loan: loan })
 							})
 						} else {
-							res.status(200).json({installment: installment, transaction: tran})
+							res.status(200).json({ installment: installment, transaction: tran })
 						}
 					});
 				})
 		}).catch(error => {
-			res.status(500).json({message: error})
+			res.status(500).json({ message: error })
 		});
 	}
 ];
