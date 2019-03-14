@@ -85,7 +85,7 @@ exports.payInstallmentPost = [
 		let currentDate = moment();
 		if (currentDate.diff(installmentDueDate, 'days') > 5) {
 			installmentLateFee = installment.principleAmount * (1 / 100);
-			amountToPay = amountToPay + installmentLateFee
+			// amountToPay = amountToPay + installmentLateFee
 		}
 
 		interestAmount = amountRound(interestAmount);

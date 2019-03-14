@@ -32,8 +32,8 @@ exports.loginPost = async (req, res, next) => {
 			if (err) {
 				res.send(err);
 			}
-			const token = jwt.sign(user, process.env.JSON_WEB_TOEKN_SECRET);
-			return res.json({user, token});
+			const access_token = jwt.sign(user, process.env.JSON_WEB_TOEKN_SECRET);
+			return res.json({user, access_token});
 		});
 
 	})(req, res);

@@ -1,5 +1,4 @@
 const passport = require('passport');
-
 const adminUrl = require('./admin');
 const authRouter = require('./auth');
 

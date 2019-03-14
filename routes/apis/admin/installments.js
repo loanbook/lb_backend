@@ -6,7 +6,7 @@ const controller = require('../../../controllers/apis/admin/installmentsControll
 
 router.get('/list', controller.installmentsListGet);
 router.get('/detail/:id/', controller.installmentDetailGet);
-router.post('/pay/:loanId/', controller.payInstallmentPost);
+router.post('/pay/:loanId/:installmentId/', controller.payInstallmentPost);
 
 module.exports = router;
 

@@ -153,6 +153,39 @@ fetchInstallmentInterestTillToday = async (loanId) => {
 	return installmentInterestPerDay * numberOfdays;
 };
 
+totalBorrowers = async () => {
+	try {
+		let borrowers = await models.Borrower.count();
+		return borrowers ? borrowers : 0;
+	} catch (e) {
+		return 0;
+	}
+}
+totalInvestors = async () => {
+	try {
+		let investors = await models.Investor.count();
+		return investors ? investors : 0;
+	} catch (e) {
+		return 0;
+	}
+}
+totalLoanAmount = async () => {
+	try {
+		let borrowedAmount = await models.Loan.sum('amount', { where: { status: 'APPROVED' } });
+		return borrowedAmount ? borrowedAmount : 0;
+	} catch (e) {
+		return 0;
+	}
+}
+totalInvestedAmount = async () => {
+	try {
+		let investedAmount = await models.Transaction.sum('amount', { where: { type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED' } });
+		return investedAmount ? investedAmount : 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
 module.exports = {
 	totalInvestorInvested: totalInvestorInvested,
 	totalInvestorDebited: totalInvestorDebited,
@@ -166,4 +199,9 @@ module.exports = {
 	fetchInstallmentInterestTillToday: fetchInstallmentInterestTillToday,
 	updateLoanAggregations: updateLoanAggregations,
 	updateBorrowerAggregations: updateBorrowerAggregations,
+
+	totalBorrowers: totalBorrowers,
+	totalInvestors: totalInvestors,
+	totalLoanAmount: totalLoanAmount,
+	totalInvestedAmount: totalInvestedAmount,
 };
