@@ -62,7 +62,7 @@ exports.createBorrowerPost = [
 
 		userInstance.save().then(q_res => {
 			models.Borrower.create({
-				userId: q_res.id,
+				userId: q_res.userId,
 				businessName: req.body.businessName,
 				description: req.body.description
 			}).then(bq_res => {
@@ -91,7 +91,7 @@ exports.updateBorrowerPut = [
 			if (req.body.description) { borrower.Borrower.description = req.body.description; }
 			borrower.Borrower.businessName = req.body.businessName;
 			borrower.save().then(bq_res => {
-				res.status(200).json({ borrower: q_res });
+				res.status(200).json({ borrower: bq_res });
 			})
 		}).catch(error => {
 			res.status(500).json({ message: error.message })

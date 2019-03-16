@@ -6,7 +6,7 @@ const passportJWT = require("passport-jwt");
 const ExtractJWT = passportJWT.ExtractJwt;
 
 const LocalStrategy = require('passport-local').Strategy;
-const JWTStrategy   = passportJWT.Strategy;
+const JWTStrategy = passportJWT.Strategy;
 
 
 const bcrypt = require('bcryptjs');
@@ -14,42 +14,42 @@ const models = require('../models');
 
 
 passport.use(
-	new LocalStrategy({usernameField: 'email', passwordField: 'password'},(email, password, done) => {
+	new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, (email, password, done) => {
 
 		// Match user
-		let user = models.User.findOne({where: {email: email}, raw: true}).then(user => {
-			if(!user){
-				return done(null, false, {message: 'Email is not register.'});
+		let user = models.User.findOne({ where: { email: email }, raw: true }).then(user => {
+			if (!user) {
+				return done(null, false, { message: 'Email is not register.' });
 			}
 
-			if(!user.isActive){
-				return done(null, false, {message: 'Account is blocked or not activated. Please contact with admin.'});
+			if (!user.isActive) {
+				return done(null, false, { message: 'Account is blocked or not activated. Please contact with admin.' });
 			}
 
 			// Match password
 			bcrypt.compare(password, user.password, (error, isMatch) => {
-				if(error) throw error;
+				if (error) throw error;
 
-				if(isMatch){
+				if (isMatch) {
 					return done(null, user)
-				}else{
-					return done(null, false, {message: 'Invalid email and password.'})
+				} else {
+					return done(null, false, { message: 'Invalid email and password.' })
 				}
 
 			});
 		})
-			.catch(error => {console.log(error)})
+			.catch(error => { console.log(error) })
 	})
 );
 
 passport.use(new JWTStrategy({
-		jwtFromRequest: ExtractJWT.fromAuthHeaderWithScheme('token'),
-		secretOrKey   : process.env.JSON_WEB_TOEKN_SECRET
-	},
+	jwtFromRequest: ExtractJWT.fromAuthHeaderWithScheme('token'),
+	secretOrKey: process.env.JSON_WEB_TOEKN_SECRET
+},
 	function (jwtPayload, cb) {
 
 		//find the user in db if needed
-		return models.User.findById(jwtPayload.id)
+		return models.User.findByPk(jwtPayload.id)
 			.then(user => {
 				return cb(null, user);
 			})

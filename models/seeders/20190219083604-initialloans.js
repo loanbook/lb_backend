@@ -22,7 +22,7 @@ module.exports = {
 		for (let index in borrowers) {
 			let borrower = borrowers[index];
 			loans.push({
-				borrowerId: borrower.id,
+				borrowerId: borrower.userId,
 				duration: 12 * (index + 1),
 				interestRate: 10,
 				amount: 2000 * (index + 1),

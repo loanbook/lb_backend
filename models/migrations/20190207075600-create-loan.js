@@ -12,7 +12,7 @@ module.exports = {
 				type: Sequelize.INTEGER,
 				references: {
 					model: 'Borrowers',
-					key: 'id'
+					key: 'userId'
 				},
 				onDelete: 'CASCADE'
 			},
