@@ -62,9 +62,9 @@ exports.createBorrowerPost = [
 
 		userInstance.save().then(q_res => {
 			models.Borrower.create({
-				userId: q_res.userId,
-				businessName: req.body.businessName,
-				description: req.body.description
+				userId: q_res.id,
+				businessName: req.body.Borrower.businessName,
+				description: req.body.Borrower.description
 			}).then(bq_res => {
 				q_res.dataValues.Borrower = bq_res;
 				res.status(200).json({ borrower: q_res });
@@ -88,10 +88,11 @@ exports.updateBorrowerPut = [
 		borrower.isActive = req.body.isActive;
 
 		borrower.save().then(q_res => {
-			if (req.body.description) { borrower.Borrower.description = req.body.description; }
-			borrower.Borrower.businessName = req.body.businessName;
-			borrower.save().then(bq_res => {
-				res.status(200).json({ borrower: bq_res });
+			if (req.body.Borrower.description) { borrower.Borrower.description = req.body.Borrower.description; }
+			borrower.Borrower.businessName = req.body.Borrower.businessName;
+			borrower.Borrower.save().then(bq_res => {
+				q_res.dataValues.Borrower = bq_res;
+				res.status(200).json({ borrower: q_res });
 			})
 		}).catch(error => {
 			res.status(500).json({ message: error.message })

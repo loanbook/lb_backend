@@ -60,7 +60,7 @@ exports.createInvestorPost = [
 				investorProfile = user;
 				return models.Investor.create({
 					userId: user.id,
-					location: req.body.location,
+					location: req.body.Investor.location,
 				}, { transaction: t })
 			})
 		}).then(result => {
@@ -95,7 +95,7 @@ exports.updateInvestorPut = [
 		investor.email = req.body.email;
 		investor.isActive = req.body.isActive;
 		investor.save().then(user => {
-			investor.Investor.location = req.body.location;
+			investor.Investor.location = req.body.Investor.location;
 			investor.Investor.save().then(q_investor => {
 				res.status(200).json({ investor: investor })
 			})

@@ -4,6 +4,7 @@ const models = require('../../../models');
 
 
 exports.createInvestorReqValidator = [
+	body('Investor.location').isLength({min: 1}).withMessage('This field is required.'),
 	body('firstName').isLength({min: 1}).withMessage('This field is required.'),
 	body('lastName').isLength({min: 1}).withMessage('This field is required.'),
 	body('email').isLength({min: 1}).withMessage("This field is required.")
@@ -16,13 +17,14 @@ exports.createInvestorReqValidator = [
 		return !user;
 	}).withMessage("Email is already registered."),
 	body('isActive').isLength({min: 1}).withMessage('This field is required').isBoolean(),
-	body('location').isLength({min: 1}).withMessage('This field is required.'),
+	// body('location').isLength({min: 1}).withMessage('This field is required.'),
 	body('initialBalance').optional().isInt({min: 1}).withMessage('This must be a number.'),
 
 	sanitizeBody('firstName').escape().trim(),
 	sanitizeBody('lastName').escape().trim(),
 	sanitizeBody('email').escape().trim(),
 	sanitizeBody('isActive').escape().trim(),
+	sanitizeBody('Investor.location').escape().trim(),
 
 	async (req, res, next) => {
 		const errors = validationResult(req);
@@ -35,6 +37,7 @@ exports.createInvestorReqValidator = [
 ];
 
 exports.updateInvestorReqValidator = [
+	body('Investor.location').isLength({min: 1}).withMessage('This field is required.'),
 	body('firstName').isLength({min: 1}).withMessage('This field is required.'),
 	body('lastName').isLength({min: 1}).withMessage('This field is required.'),
 	body('email').isLength({min: 1}).withMessage("This field is required.")
@@ -47,12 +50,13 @@ exports.updateInvestorReqValidator = [
 		return !user;
 	}).withMessage("Email is already registered."),
 	body('isActive').isLength({min: 1}).withMessage('This field is required').isBoolean(),
-	body('location').isLength({min: 1}).withMessage('This field is required.'),
+	// body('location').isLength({min: 1}).withMessage('This field is required.'),
 
 	sanitizeBody('firstName').escape().trim(),
 	sanitizeBody('lastName').escape().trim(),
 	sanitizeBody('email').escape().trim(),
 	sanitizeBody('isActive').escape().trim(),
+	sanitizeBody('Investor.location').escape().trim(),
 
 	async (req, res, next) => {
 		const errors = validationResult(req);
