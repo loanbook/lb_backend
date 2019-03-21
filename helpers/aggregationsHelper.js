@@ -101,11 +101,11 @@ fetchPoolTotalInvestment = async () => {
 	return credited;
 };
 
-cashPool = async () => {
-	let installmentsCredited = await totalInvestmentsTillNow();
-	let debited = await totalDebitedTilNow();
-	return installmentsCredited - debited;
-};
+// cashPool = async () => {
+// 	let installmentsCredited = await totalInvestmentsTillNow();
+// 	let debited = await totalDebitedTilNow();
+// 	return installmentsCredited - debited;
+// };
 
 updateLoanAggregations = async (loanId) => {
 	return await models.Transaction.findOne({
@@ -186,22 +186,159 @@ totalInvestedAmount = async () => {
 	}
 }
 
+/*
+Things to Show on Dashboard
+*/
+
+/*
+# 1 Assets under management == 
+( Cash  + outstanding capital from loans (adjusted for "default", remember the valuation mathod proposed before) + accrued interest )
+*/
+assetsUnderManagement = async () => {
+	try {
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
+/*
+# 2 Cashpool == 
+total amount of cash
+*/
+cashPool = async () => {
+	// let installmentsCredited = await totalInvestmentsTillNow();
+	// let debited = await totalDebitedTilNow();
+	// let totalLoanAmount = await totalLoanAmount();
+	// return installmentsCredited - (debited + totalLoanAmount);
+	try {
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
+/*
+# 3 Interest income ==
+all interest received
+*/
+interestIncome = async () => {
+	try {
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
+/*
+# 4 fees ==
+All fees charged == interest * fee (%)
+*/
+fees = async () => {
+	try {
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
+/*
+# 5 Operating income ==
+interest income - fees
+*/
+operatingIncome = async () => {
+	try {
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
+/*
+# 6 cash deposit ==
+all deposits made by investors
+*/
+cashDeposit = async () => {
+	try {
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
+/*
+# 7 cash withdrawals ==
+all withdrawals clients made
+*/
+cashWithdrawals = async () => {
+	try {
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
+/*
+# 8 cash available to withdraw ==
+all operating income + deposits - withdrawals + capital repayments - investments
+*/
+cashAvailableToWithdrawal = async () => {
+	try {
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
+/*
+# 9 cash available to withdraw (investor) ==
+cashAvailableToWithdrawal == all operating income + deposits - withdrawals + capital repayments - investments
+cashAvailableToWithdrawalInvestor == cashAvailableToWithdrawal * (% ownership of fund)
+*/
+cashAvailableToWithdrawalInvestor = async (investorId) => {
+	try {
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
+/*
+# 10 % ownership
+*/
+percentageOwnership = async () => {
+	try {
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
 module.exports = {
 	totalInvestorInvested: totalInvestorInvested,
 	totalInvestorDebited: totalInvestorDebited,
 	fetchInvestorInvestment: fetchInvestorInvestment,
 	fetchInvestorPercentage: fetchInvestorPercentage,
 	fetchInvestorPoolShare: fetchInvestorPoolShare,
-	cashPool: cashPool,
 	totalInvestmentsTillNow: totalInvestmentsTillNow,
 	totalDebitedTilNow: totalDebitedTilNow,
 	fetchLateInstallmentFee: fetchLateInstallmentFee,
 	fetchInstallmentInterestTillToday: fetchInstallmentInterestTillToday,
 	updateLoanAggregations: updateLoanAggregations,
 	updateBorrowerAggregations: updateBorrowerAggregations,
-
 	totalBorrowers: totalBorrowers,
 	totalInvestors: totalInvestors,
 	totalLoanAmount: totalLoanAmount,
 	totalInvestedAmount: totalInvestedAmount,
+
+	assetsUnderManagement: assetsUnderManagement,
+	cashPool: cashPool,
+	interestIncome: interestIncome,
+	fees: fees,
+	operatingIncome: operatingIncome,
+	cashDeposit: cashDeposit,
+	cashWithdrawals: cashWithdrawals,
+	cashAvailableToWithdrawal: cashAvailableToWithdrawal,
+	cashAvailableToWithdrawalInvestor: cashAvailableToWithdrawalInvestor,
+	percentageOwnership: percentageOwnership,
 };

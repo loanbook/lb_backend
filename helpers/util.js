@@ -18,18 +18,26 @@ exports.getPercentage = (total, percent, dec = 4) => {
 	return NaN;
 };
 
-exports.generateDashbardCard = (label, value, detail = 'You can show some detailed information about this widget in here.') => {
+exports.generateDashbardCard = (label, value) => {
 
 	return {
 		'title': label,
-		'data': {
-			'label': label,
-			'count': value,
-			'extra': {
-				'label': label,
-				'count': value
-			}
-		},
-		'detail': detail
+		'count': value,
 	}
 }
+
+// exports.generateDashbardCard = (label, value, detail = 'You can show some detailed information about this widget in here.') => {
+
+// 	return {
+// 		'title': label,
+// 		'data': {
+// 			'label': label,
+// 			'count': value,
+// 			'extra': {
+// 				'label': label,
+// 				'count': value
+// 			}
+// 		},
+// 		'detail': detail
+// 	}
+// }
