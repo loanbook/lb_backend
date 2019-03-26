@@ -98,7 +98,7 @@ exports.createLoanPost = [
 			amount: req.body.amount,
 			duration: req.body.duration,
 			interestRate: req.body.interestRate,
-			borrowerId: req.borrower.id,
+			borrowerId: req.borrower.userId,
 			status: status,
 			loanType: req.body.loanType,
 			loanDate: req.body.loanDate,

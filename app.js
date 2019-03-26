@@ -28,6 +28,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ApplicationRoutes
 require('./routes')(app);
 
+// var CronJob = require('cron').CronJob;
+// new CronJob('* * * * * *', function() {
+//   console.log('You will see this message every second main app');
+// }, null, true, 'America/Los_Angeles');
+
+
+const crons = require('./crons/indexCron.js');
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
