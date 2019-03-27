@@ -23,22 +23,11 @@ module.exports = (sequelize, DataTypes) => {
 };
 
 
-// const updateInvestorPercentage = function () {
-//   //Investment come (consider accrued interest)
-//   //Investor withdraw 
-//   //loan recovery
-//   let recoveryAmount = 100
-
-//   // Distribute share
-//   models.Investor.findAll({}).then(investors => {
-//     for (investor in investors)
-//       recoveryAmount * (investor.ownershipPercentage / 100)
-
-//       investor 
-//     res.status(200).json({ installments: installments });
-//   }).catch(error => {
-//     res.status(500).json({ message: error.message });
-//   })
+const updateInvestorPercentage = function () {
+  //Investment come (consider accrued interest)
+  //Investor withdraw
+  //loan recovery
+  let recoveryAmount = 100
 
 
-// }
+}
