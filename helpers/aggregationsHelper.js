@@ -5,6 +5,7 @@ const utilHelper = require('./util');
 
 const amountRound = utilHelper.roundAmount;
 const calculatePercentage = utilHelper.getPercentage;
+const Op = models.Sequelize.Op;
 
 
 totalInvestorInvested = async (investorId) => {
@@ -101,11 +102,6 @@ fetchPoolTotalInvestment = async () => {
 	return credited;
 };
 
-// cashPool = async () => {
-// 	let installmentsCredited = await totalInvestmentsTillNow();
-// 	let debited = await totalDebitedTilNow();
-// 	return installmentsCredited - debited;
-// };
 
 updateLoanAggregations = async (loanId) => {
 	return await models.Transaction.findOne({
@@ -140,6 +136,9 @@ fetchLateInstallmentFee = async (loanId) => {
 fetchInstallmentInterestTillToday = async (loanId) => {
 	let installmentDetail = await models.Installment.findOne({
 		where: { loanId: loanId, status: 'PAYMENT_DUE' },
+		order: [
+			['createdAt', 'DESC']
+		],
 	});
 	let installmentInterestPerDay = 0;
 	let numberOfdays = 0;
@@ -152,6 +151,44 @@ fetchInstallmentInterestTillToday = async (loanId) => {
 	}
 	return installmentInterestPerDay * numberOfdays;
 };
+
+acuredInstallmentInterest = async (loanId) => {
+	let currentDate = moment();
+	let nextDueInstallmentDetail = await models.Installment.findOne({
+		where: {
+			loanId: loanId, status: 'PAYMENT_DUE', dueDate: {
+				[Op.gt]: currentDate,
+			}
+		},
+		order: [
+			['id', 'ASC']
+		],
+	});
+	let installmentInterestPerDay = 0;
+	let numberOfdays = 0;
+	if (nextDueInstallmentDetail) {
+		installmentInterestPerDay = nextDueInstallmentDetail.interestAmount / 30; // --todo: change according to month and payment
+		let installmentDueDate = moment(nextDueInstallmentDetail.dueDate);
+		numberOfdays = Math.abs(currentDate.diff(installmentDueDate, 'days'));
+	}
+	return installmentInterestPerDay * numberOfdays;
+};
+
+acuredAllLoansInterest = async () => {
+	const openLoans = await models.Loan.findAll({
+		where: { status: 'OPEN' },
+	});
+	let sumLoansAcuredInterest = 0;
+	if (openLoans) {
+		for (key in openLoans) {
+			let openLoan = openLoans[key];
+			const installmentInterestTillToday = await acuredInstallmentInterest(openLoan.id);
+			console.log(installmentInterestTillToday);
+			sumLoansAcuredInterest = sumLoansAcuredInterest + installmentInterestTillToday;
+		}
+	}
+	return sumLoansAcuredInterest;
+}
 
 totalBorrowers = async () => {
 	try {
@@ -186,6 +223,67 @@ totalInvestedAmount = async () => {
 	}
 }
 
+/** 
+1. Timely paid loans are valued at a 100%
+2. Loans on grace periods ( 1 - 5 days ) are valued at 100%
+3. Late payment loans ( stage 1: 6 - 30 days ) are valued at 95%
+4. Late payment loans ( stage 2: 31 - 60 days ) are valued at 90%
+5. Late payment loans ( stage 3: 61 - 90 days ) are valued at 50%
+6. Collection (91+ days) are valued at 0%
+ * **/
+
+outstandingLoanValuedPercentage = async (loanId) => {
+	let currentDate = moment();
+	let firstDueInstallmentDetail = await models.Installment.findOne({
+		where: {
+			loanId: loanId, status: 'PAYMENT_DUE', dueDate: {
+				[Op.lt]: currentDate,
+			}
+		},
+		order: [
+			['id', 'ASC']
+		],
+	});
+	let loanPercentageValuation = 100;
+	if (firstDueInstallmentDetail) {
+		let installmentDueDate = moment(firstDueInstallmentDetail.dueDate);
+		numberOfdays = Math.abs(currentDate.diff(installmentDueDate, 'days'));
+		if (6 <= numberOfdays <= 30) {
+			loanPercentageValuation = 95;
+		}
+		else if (31 <= numberOfdays <= 60) {
+			loanPercentageValuation = 90;
+		}
+		else if (61 <= numberOfdays <= 90) {
+			loanPercentageValuation = 50;
+		}
+		else if (91 <= numberOfdays) {
+			loanPercentageValuation = 0;
+		}
+	}
+	return loanPercentageValuation;
+}
+outstandingCapitalFromLoans = async () => {
+	try {
+		const openLoans = await models.Loan.findAll({
+			where: { status: 'OPEN' },
+		});
+		let sumLoansAcuredValuation = 0;
+		if (openLoans) {
+			for (key in openLoans) {
+				let openLoan = openLoans[key];
+				const outstandingLoanPercentage = await outstandingLoanValuedPercentage(openLoan.id);
+				console.log(outstandingLoanPercentage);
+				openLoanValuation = openLoan.amount * outstandingLoanPercentage / 100;
+				sumLoansAcuredValuation = sumLoansAcuredValuation + openLoanValuation;
+			}
+		}
+		return sumLoansAcuredValuation;
+	} catch (e) {
+		return 0;
+	}
+}
+
 /*
 Things to Show on Dashboard
 */
@@ -196,7 +294,10 @@ Things to Show on Dashboard
 */
 assetsUnderManagement = async () => {
 	try {
-		return 0;
+		let acuredAllLoansInterest = await acuredAllLoansInterest();
+		let outstandingCapitalFromLoans = await outstandingCapitalFromLoans();
+		let cash = await cashPool();
+		return cash + outstandingCapitalFromLoans + acuredAllLoansInterest;
 	} catch (e) {
 		return 0;
 	}
@@ -207,12 +308,13 @@ assetsUnderManagement = async () => {
 total amount of cash
 */
 cashPool = async () => {
-	// let installmentsCredited = await totalInvestmentsTillNow();
-	// let debited = await totalDebitedTilNow();
-	// let totalLoanAmount = await totalLoanAmount();
-	// return installmentsCredited - (debited + totalLoanAmount);
 	try {
-		return 0;
+		let statsDetail = await models.Stats.findOne({
+			order: [
+				['id', 'DESC']
+			],
+		});
+		return statsDetail.cashPool;
 	} catch (e) {
 		return 0;
 	}
@@ -224,7 +326,12 @@ all interest received
 */
 interestIncome = async () => {
 	try {
-		return 0;
+		let statsDetail = await models.Stats.findOne({
+			order: [
+				['id', 'DESC']
+			],
+		});
+		return statsDetail.interestIncome;
 	} catch (e) {
 		return 0;
 	}
@@ -236,7 +343,13 @@ All fees charged == interest * fee (%)
 */
 fees = async () => {
 	try {
-		return 0;
+		let statsDetail = await models.Stats.findOne({
+			order: [
+				['id', 'DESC']
+			],
+		});
+		return statsDetail.fees;
+
 	} catch (e) {
 		return 0;
 	}
@@ -248,7 +361,12 @@ interest income - fees
 */
 operatingIncome = async () => {
 	try {
-		return 0;
+		let statsDetail = await models.Stats.findOne({
+			order: [
+				['id', 'DESC']
+			],
+		});
+		return statsDetail.interestIncome - statsDetail.fees;
 	} catch (e) {
 		return 0;
 	}
@@ -260,7 +378,8 @@ all deposits made by investors
 */
 cashDeposit = async () => {
 	try {
-		return 0;
+		let investments = await totalInvestmentsTillNow()
+		return investments;
 	} catch (e) {
 		return 0;
 	}
@@ -284,6 +403,9 @@ all operating income + deposits - withdrawals + capital repayments - investments
 */
 cashAvailableToWithdrawal = async () => {
 	try {
+		let operatingIncome = await operatingIncome();
+		let cashDeposit = await cashDeposit();
+		let withdrawals = await withdrawals();
 		return 0;
 	} catch (e) {
 		return 0;
@@ -330,6 +452,10 @@ module.exports = {
 	totalInvestors: totalInvestors,
 	totalLoanAmount: totalLoanAmount,
 	totalInvestedAmount: totalInvestedAmount,
+	acuredInstallmentInterest: acuredInstallmentInterest,
+	acuredAllLoansInterest: acuredAllLoansInterest,
+	outstandingLoanValuedPercentage: outstandingLoanValuedPercentage,
+	outstandingCapitalFromLoans: outstandingCapitalFromLoans,
 
 	assetsUnderManagement: assetsUnderManagement,
 	cashPool: cashPool,

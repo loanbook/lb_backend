@@ -17,4 +17,5 @@ const errorHandler = function (error) {
 	console.warn('Background Process fail.', error);
 }
 
-investorQueue.add('distributeShare', { recoveryAmount: 100 }).then(successHandler, errorHandler);
+// investorQueue.add('distributeShare', { recoveryAmount: 100 }).then(successHandler, errorHandler);
+investorQueue.add('calculateAcuredInterestUpdatePercentage', { investmentAmount: 100 }).then(successHandler, errorHandler);
