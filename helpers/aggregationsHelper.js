@@ -223,6 +223,15 @@ totalInvestedAmount = async () => {
 	}
 }
 
+remainingLoanCapital = async (loanId) => {
+	try {
+		let interestPlusAmount = await models.Installment.sum('payableAmount', { where: { loanId: loanId, status: 'PAYMENT_DUE' } });
+		return interestPlusAmount ? interestPlusAmount : 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
 /** 
 1. Timely paid loans are valued at a 100%
 2. Loans on grace periods ( 1 - 5 days ) are valued at 100%
@@ -273,8 +282,11 @@ outstandingCapitalFromLoans = async () => {
 			for (key in openLoans) {
 				let openLoan = openLoans[key];
 				const outstandingLoanPercentage = await outstandingLoanValuedPercentage(openLoan.id);
+				const remainingCapital = await remainingLoanCapital(openLoan.id);
+				const accruedInterest = await acuredInstallmentInterest(openLoan.id);
 				console.log(outstandingLoanPercentage);
-				openLoanValuation = openLoan.amount * outstandingLoanPercentage / 100;
+				// outstandingLoanPercentage * (accrued interest + remaining capital)
+				openLoanValuation = (remainingCapital + accruedInterest) * outstandingLoanPercentage / 100;
 				sumLoansAcuredValuation = sumLoansAcuredValuation + openLoanValuation;
 			}
 		}

@@ -26,7 +26,8 @@ exports.calculateAcuredInterestUpdatePercentage = function (job) {
 	console.log('investmentAmount: ', job.data.investmentAmount);
 	const InvestmentAmount = job.data.investmentAmount;
 	// const currentDate = moment().format('YYYY-MM-DD');
-	aggrigationsHelper.acuredAllLoansInterest().then(
+	// aggrigationsHelper.acuredAllLoansInterest().then(
+	aggrigationsHelper.outstandingCapitalFromLoans().then(
 		(acuredInterestTillToday) => {
 			console.log(acuredInterestTillToday);
 			// No need to update percentage as it loan profit will not effect 

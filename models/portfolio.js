@@ -21,13 +21,3 @@ module.exports = (sequelize, DataTypes) => {
   };
   return InvestorPortfolio;
 };
-
-
-const updateInvestorPercentage = function () {
-  //Investment come (consider accrued interest)
-  //Investor withdraw
-  //loan recovery
-  let recoveryAmount = 100
-
-
-}
