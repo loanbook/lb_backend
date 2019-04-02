@@ -1,47 +1,42 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('InvestorPortfolios', {
+    return queryInterface.createTable('LoanBook', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      totalInvested: {
+      cashPool: {
         allowNull: false,
         type: Sequelize.FLOAT,
         defaultValue: 0
       },
-      totalWithdraw: {
+      loanApprovedAmount: {
         allowNull: false,
         type: Sequelize.FLOAT,
         defaultValue: 0
       },
-      ownershipPercentage: {
+      interestIncome: {
         allowNull: false,
         type: Sequelize.FLOAT,
         defaultValue: 0
       },
-      currentWeitage: {
+      fees: {
         allowNull: false,
         type: Sequelize.FLOAT,
         defaultValue: 0
       },
-      operatingIncome: {
+      cashDeposit: {
         allowNull: false,
         type: Sequelize.FLOAT,
         defaultValue: 0
       },
-      cashAvailableToWithdrawal: {
+      cashWithdrawal: {
         allowNull: false,
         type: Sequelize.FLOAT,
         defaultValue: 0
-      },
-      updateReason: {
-        type: Sequelize.STRING,
-        maxLength: 100,
-        allowNull: false
       },
       createdAt: {
         allowNull: false,
@@ -54,6 +49,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('InvestorPortfolios');
+    return queryInterface.dropTable('LoanBook');
   }
 };
