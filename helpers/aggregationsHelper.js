@@ -169,7 +169,7 @@ acuredInstallmentInterest = async (loanId) => {
 	if (nextDueInstallmentDetail) {
 		installmentInterestPerDay = nextDueInstallmentDetail.interestAmount / 30; // --todo: change according to month and payment
 		let installmentDueDate = moment(nextDueInstallmentDetail.dueDate);
-		numberOfdays = Math.abs(currentDate.diff(installmentDueDate, 'days'));
+		numberOfdays = Math.abs(30 - installmentDueDate.diff(currentDate, 'days'));
 	}
 	return installmentInterestPerDay * numberOfdays;
 };
@@ -306,10 +306,10 @@ Things to Show on Dashboard
 */
 assetsUnderManagement = async () => {
 	try {
-		let acuredAllLoansInterest = await acuredAllLoansInterest();
-		let outstandingCapitalFromLoans = await outstandingCapitalFromLoans();
+		let acuredAllLoansInterestValue = await acuredAllLoansInterest();
+		let outstandingCapitalFromLoansValue = await outstandingCapitalFromLoans();
 		let cash = await cashPool();
-		return cash + outstandingCapitalFromLoans + acuredAllLoansInterest;
+		return cash + outstandingCapitalFromLoansValue + acuredAllLoansInterestValue;
 	} catch (e) {
 		return 0;
 	}

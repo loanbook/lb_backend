@@ -7,7 +7,7 @@ const generateDashbardCard = utilsHelper.generateDashbardCard;
 
 exports.statsGet = async function (req, res, next) {
 	let companyDetail = await models.LoanBook.findOne({
-		order: [ [ 'createdAt', 'DESC' ]],
+		order: [['createdAt', 'DESC']],
 	});
 	models.Stats.findOne({
 		order: [['createdAt', 'DESC']],
