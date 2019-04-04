@@ -31,9 +31,9 @@ addInvestmentAmount = async (investmentAmount, investorId) => {
 	let inestorDetail = await models.Investor.findByPk(investorId);
 	inestorDetail.totalInvested = inestorDetail.totalInvested + investmentAmount;
 	inestorDetail.save()
-
 	// re evaluate the ownership for all user
-	
+	await aggrigationsHelper.reEvaluatePercentageOwnershipAllInvestors()
+
 }
 
 exports.calculateAcuredInterestUpdatePercentage = function (job) {

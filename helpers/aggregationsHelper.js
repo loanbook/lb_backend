@@ -487,6 +487,7 @@ module.exports = {
 	acuredAllLoansInterest: acuredAllLoansInterest,
 	outstandingLoanValuedPercentage: outstandingLoanValuedPercentage,
 	outstandingCapitalFromLoans: outstandingCapitalFromLoans,
+	reEvaluatePercentageOwnershipAllInvestors: reEvaluatePercentageOwnershipAllInvestors,
 
 	assetsUnderManagement: assetsUnderManagement,
 	cashPool: cashPool,

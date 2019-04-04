@@ -6,22 +6,24 @@ const generateDashbardCard = utilsHelper.generateDashbardCard;
 
 
 exports.statsGet = async function (req, res, next) {
-
+	let companyDetail = await models.LoanBook.findOne({
+		order: [ [ 'createdAt', 'DESC' ]],
+	});
 	models.Stats.findOne({
 		order: [['createdAt', 'DESC']],
 	}).then(q_res => {
 		const stats = {}
-		stats.cashPool = generateDashbardCard('Cash Pool', q_res.cashPool);
+		stats.cashPool = generateDashbardCard('Cash Pool', companyDetail.cashPool);
 		stats.totalBorrowers = generateDashbardCard('Borrowers', q_res.totalBorrowers);
 		stats.totalInvestors = generateDashbardCard('Investors', q_res.totalInvestors);
-		stats.totalLoanAmount = generateDashbardCard('Loan Amount', q_res.totalLoanAmount);
+		stats.totalLoanAmount = generateDashbardCard('Loan Amount', companyDetail.loanApprovedAmount);
 		stats.totalInvestedAmount = generateDashbardCard('Invested Amount', q_res.totalInvestedAmount);
 		stats.assetsUnderManagement = generateDashbardCard('Assets Under Management', q_res.assetsUnderManagement);
 		stats.interestIncome = generateDashbardCard('Interest Income', q_res.interestIncome);
-		stats.fees = generateDashbardCard('Fees', q_res.fees);
-		stats.operatingIncome = generateDashbardCard('Operating Income', q_res.operatingIncome);
-		stats.cashDeposit = generateDashbardCard('Cash Deposit', q_res.cashDeposit);
-		stats.cashWithdrawals = generateDashbardCard('Cash Withdrawals', q_res.cashWithdrawals);
+		stats.fees = generateDashbardCard('Fees', companyDetail.fees);
+		stats.operatingIncome = generateDashbardCard('Operating Income', companyDetail.interestIncome - companyDetail.fees);
+		stats.cashDeposit = generateDashbardCard('Cash Deposit', companyDetail.cashDeposit);
+		stats.cashWithdrawals = generateDashbardCard('Cash Withdrawals', companyDetail.cashWithdrawal);
 		stats.cashAvailableToWithdrawal = generateDashbardCard('Cash Available To Withdrawal', q_res.cashAvailableToWithdrawal);
 		// stats.cashAvailableToWithdrawalInvestor = generateDashbardCard('Cash Available To Withdrawal Investor', await aggrigationsHelper.cashAvailableToWithdrawalInvestor());
 		// stats.percentageOwnership = generateDashbardCard('Percentage Ownership', await aggrigationsHelper.percentageOwnership());

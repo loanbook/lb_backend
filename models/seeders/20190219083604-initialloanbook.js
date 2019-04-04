@@ -21,7 +21,7 @@ module.exports = {
 			updatedAt: moment().format('YYYY-MM-DD h:mm:ss'),
 		}];
 
-		return queryInterface.bulkInsert('LoanBook', loanbook, {});
+		return queryInterface.bulkInsert('LoanBooks', loanbook, {});
 	},
 
 	down: (queryInterface, Sequelize) => {
@@ -29,6 +29,6 @@ module.exports = {
       Add reverting commands here.
       Return a promise to correctly handle asynchronicity.
     */
-		return queryInterface.bulkDelete('LoanBook', null, {});
+		return queryInterface.bulkDelete('LoanBooks', null, {});
 	}
 };

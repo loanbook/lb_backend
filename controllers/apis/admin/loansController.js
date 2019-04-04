@@ -203,10 +203,20 @@ exports.updateLoanPut = [
 									principalAmount: q_res.amount,
 									interestAmount: 0,
 									comment: 'Loan Transaction.'
-								}, { transactions: t })
+								}, { transactions: t }).then(t2 => {
+									transactions.push(t2);
+									return models.LoanBook.findOne().then((companyDetail) => {
+										if (companyDetail.cashPool >= q_res.amount) {
+											companyDetail.cashPool = companyDetail.cashPool - q_res.amount;
+											companyDetail.loanApprovedAmount = companyDetail.loanApprovedAmount + q_res.amount;
+											return companyDetail.save({ transactions: t })
+										} else {
+											throw new Error();
+										}
+									}, { transactions: t })
+								})
 							})
 						})).then(t2 => {
-							transactions.push(t2);
 							res.status(200).json({ loan: q_res, transactions: transactions })
 						})
 					} else {
