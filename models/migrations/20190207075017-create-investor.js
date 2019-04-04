@@ -13,15 +13,35 @@ module.exports = {
         autoIncrement: false,
         primaryKey: true,
         type: Sequelize.INTEGER,
-				references:{
-					model: 'Users',
-					key: 'id'
-				},
-				onDelete: 'CASCADE',
-				allowNull: false
+        references: {
+          model: 'Users',
+          key: 'id'
+        },
+        onDelete: 'CASCADE',
+        allowNull: false
       },
       location: {
         type: Sequelize.STRING
+      },
+      totalInvested: {
+        allowNull: false,
+        type: Sequelize.FLOAT,
+        defaultValue: 0
+      },
+      totalWithdraw: {
+        allowNull: false,
+        type: Sequelize.FLOAT,
+        defaultValue: 0
+      },
+      ownershipPercentage: {
+        allowNull: false,
+        type: Sequelize.FLOAT,
+        defaultValue: 0
+      },
+      operatingIncome: {
+        allowNull: false,
+        type: Sequelize.FLOAT,
+        defaultValue: 0
       },
       createdAt: {
         allowNull: false,

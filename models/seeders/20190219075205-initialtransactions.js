@@ -8,16 +8,18 @@ const models = require('../index');
 const investorsEmails = ['alex.investor@loanbook.com', 'alina.investor@loanbook.com', 'Jmima.investor@loanbook.com'];
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+	up: async (queryInterface, Sequelize) => {
     /*
       Add altering commands here.
       Return a promise to correctly handle asynchronicity.
     */
-		let users = await models.User.findAll({where: {email: {[Op.in]: investorsEmails}}});
+		let users = await models.User.findAll({ where: { email: { [Op.in]: investorsEmails } } });
 		let transactions = [];
+		let transactionSum = 0;
 
 		for (let index in users) {
 			let user = users[index];
+			transactionSum = transactionSum + (2000 * (index + 1))
 			transactions.push({
 				type: 'INVESTMENT_DEPOSIT',
 				amount: 2000 * (index + 1),
@@ -31,17 +33,28 @@ module.exports = {
 			})
 		}
 
-		return queryInterface.bulkInsert('Transactions', transactions, {});
-  },
+		return queryInterface.bulkInsert('Transactions', transactions, {}).then(() => {
+			console.log('After Transactions run ');
+			for (let t in transactions) {
+				let transaction = transactions[t];
+				models.Investor.findByPk(transaction.userId).then((investor) => {
+					investor.totalInvested = transaction.amount;
+					investor.ownershipPercentage = parseFloat(transaction.amount / transactionSum * 100).toFixed(1);
+					investor.save();
+				})
+			}
+		});
+	},
 
-  down: (queryInterface, Sequelize) => {
+	down: (queryInterface, Sequelize) => {
     /*
       Add reverting commands here.
       Return a promise to correctly handle asynchronicity.
     */
-		return queryInterface.bulkDelete('Transactions', null, {include: [
-				{model: models.User, where:{email: {[Op.in]: investorsEmails}}}
+		return queryInterface.bulkDelete('Transactions', null, {
+			include: [
+				{ model: models.User, where: { email: { [Op.in]: investorsEmails } } }
 			]
 		});
-  }
+	}
 };

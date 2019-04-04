@@ -321,12 +321,8 @@ total amount of cash
 */
 cashPool = async () => {
 	try {
-		let statsDetail = await models.Stats.findOne({
-			order: [
-				['id', 'DESC']
-			],
-		});
-		return statsDetail.cashPool;
+		let companyDetail = await models.LoanBook.findOne();
+		return companyDetail.cashPool;
 	} catch (e) {
 		return 0;
 	}
@@ -338,12 +334,8 @@ all interest received
 */
 interestIncome = async () => {
 	try {
-		let statsDetail = await models.Stats.findOne({
-			order: [
-				['id', 'DESC']
-			],
-		});
-		return statsDetail.interestIncome;
+		let companyDetail = await models.LoanBook.findOne();
+		return companyDetail.interestIncome;
 	} catch (e) {
 		return 0;
 	}
@@ -355,13 +347,8 @@ All fees charged == interest * fee (%)
 */
 fees = async () => {
 	try {
-		let statsDetail = await models.Stats.findOne({
-			order: [
-				['id', 'DESC']
-			],
-		});
-		return statsDetail.fees;
-
+		let companyDetail = await models.LoanBook.findOne();
+		return companyDetail.fees;
 	} catch (e) {
 		return 0;
 	}
@@ -373,12 +360,8 @@ interest income - fees
 */
 operatingIncome = async () => {
 	try {
-		let statsDetail = await models.Stats.findOne({
-			order: [
-				['id', 'DESC']
-			],
-		});
-		return statsDetail.interestIncome - statsDetail.fees;
+		let companyDetail = await models.LoanBook.findOne();
+		return companyDetail.interestIncome - companyDetail.fees;
 	} catch (e) {
 		return 0;
 	}
@@ -390,8 +373,8 @@ all deposits made by investors
 */
 cashDeposit = async () => {
 	try {
-		let investments = await totalInvestmentsTillNow()
-		return investments;
+		let companyDetail = await models.LoanBook.findOne();
+		return companyDetail.cashDeposit;
 	} catch (e) {
 		return 0;
 	}
@@ -403,7 +386,8 @@ all withdrawals clients made
 */
 cashWithdrawals = async () => {
 	try {
-		return 0;
+		let companyDetail = await models.LoanBook.findOne();
+		return companyDetail.cashWithdrawal;
 	} catch (e) {
 		return 0;
 	}
@@ -448,6 +432,41 @@ percentageOwnership = async () => {
 	}
 }
 
+/*
+# update percentage owner ship
+*/
+evaluatePercentageOwnership = async (investorId, investorInterestShare) => {
+	try {
+		let investorDetail = await models.Investor.findOne({
+			where: {
+				id: investorId
+			}
+		});
+		let assetsUnderManagementValue = await assetsUnderManagement();
+		//((Deposits - withdraws + investorOperatingIncome + investorInterestShare)/Assets under management) * 100
+		return (investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome + investorInterestShare) * assetsUnderManagementValue * 100
+	} catch (e) {
+		console.log('Percentage ownership evaluation fail for investor.', investorId)
+		return 0;
+	}
+}
+
+reEvaluatePercentageOwnershipAllInvestors = async () => {
+	try {
+		let investors = await models.Investor.findAll();
+		let assetsUnderManagementValue = await assetsUnderManagement();
+		for (key in investors) {
+			let investorDetail = investors[key];
+			//((Deposits - withdraws + investorOperatingIncome + investorInterestShare)/Assets under management) * 100
+			investorDetail.ownershipPercentage = (investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome) * assetsUnderManagementValue * 100
+			investorDetail.save();
+		}
+		console.log('Percentage ownership for all user successfully updated.')
+	} catch (e) {
+		console.log('Percentage ownership updaet for all user fail.')
+	}
+}
+
 module.exports = {
 	totalInvestorInvested: totalInvestorInvested,
 	totalInvestorDebited: totalInvestorDebited,
@@ -468,6 +487,7 @@ module.exports = {
 	acuredAllLoansInterest: acuredAllLoansInterest,
 	outstandingLoanValuedPercentage: outstandingLoanValuedPercentage,
 	outstandingCapitalFromLoans: outstandingCapitalFromLoans,
+	reEvaluatePercentageOwnershipAllInvestors: reEvaluatePercentageOwnershipAllInvestors,
 
 	assetsUnderManagement: assetsUnderManagement,
 	cashPool: cashPool,

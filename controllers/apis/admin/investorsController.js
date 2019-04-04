@@ -44,7 +44,7 @@ exports.createInvestorPost = [
 	investorValidators.createInvestorReqValidator,
 
 	async (req, res, next) => {
-		let initialDeposit = parseInt(req.body.initialDeposit);
+		const initialDeposit = parseInt(req.body.initialBalance);
 		let investorProfile = null;
 
 		let userInstance = models.User.build({
@@ -61,6 +61,7 @@ exports.createInvestorPost = [
 				return models.Investor.create({
 					userId: user.id,
 					location: req.body.Investor.location,
+					totalInvested: initialDeposit,
 				}, { transaction: t })
 			})
 		}).then(result => {
@@ -70,7 +71,8 @@ exports.createInvestorPost = [
 				models.Transaction.create({
 					userId: result.userId, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: initialDeposit,
 					comment: 'Initial deposit'
-				}).then(trans => {
+				}, { transaction: t }).then(trans => {
+					// Add initial deposit to company value update the ownershipPercentage for all users
 					res.status(200).json({ investor: investorProfile, transaction: trans })
 				})
 			} else {
@@ -115,6 +117,11 @@ exports.investorAddDeposit = [
 			userId: req.investor.id, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: parseInt(req.body.amount),
 			comment: 'Deposit'
 		}).then(trans => {
+			// this backend process will update percentage for each user after this investment.
+			investorQueue.add('calculateAcuredInterestUpdatePercentage', {
+				investmentAmount: req.body.amount,
+				investorId: req.investor.id
+			})
 			res.status(200).json({ transaction: trans, investor: req.investor })
 		}).catch(error => res.status(500).json({ message: error.message }))
 	}

@@ -2,7 +2,11 @@
 module.exports = (sequelize, DataTypes) => {
   const Investor = sequelize.define('Investor', {
     userId: { type: DataTypes.INTEGER, primaryKey: true },
-    location: DataTypes.STRING
+    location: DataTypes.STRING,
+    totalInvested: DataTypes.FLOAT,
+    totalWithdraw: DataTypes.FLOAT,
+    ownershipPercentage: DataTypes.FLOAT,
+    operatingIncome: DataTypes.FLOAT,
   }, {
       getterMethods: {}
     });
