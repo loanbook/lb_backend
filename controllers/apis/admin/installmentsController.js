@@ -125,7 +125,14 @@ exports.payInstallmentPost = [
 						type: 'LOAN_RETURN',
 						comment: 'Borrower returned loan amount.'
 					}
-				], { transaction: t })
+				], { transaction: t }).then((gs_result) => {
+					return models.LoanBook.findOne().then((companyDetail) => {
+						companyDetail.cashPool = companyDetail.cashPool + interestAmount + installmentLateFee;
+						companyDetail.interestIncome = companyDetail.interestIncome + interestAmount;
+						companyDetail.fees = companyDetail.fees + companyPercentage + installmentLateFee;
+						return companyDetail.save({ transactions: t })
+					}, { transactions: t })
+				}, { transaction: t });
 			})
 
 		}).then(last_result => {
