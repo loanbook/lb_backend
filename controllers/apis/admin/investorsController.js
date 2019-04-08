@@ -72,14 +72,20 @@ exports.createInvestorPost = [
 					userId: result.userId, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: initialDeposit,
 					comment: 'Initial deposit'
 				}, { transaction: t }).then(trans => {
-					// Add initial deposit to company value update the ownershipPercentage for all users
-					res.status(200).json({ investor: investorProfile, transaction: trans })
+					models.LoanBook.findOne().then((companyDetail) => {
+						companyDetail.cashPool = companyDetail.cashPool + initialDeposit;
+						companyDetail.cashDeposit = companyDetail.cashDeposit + initialDeposit;
+						companyDetail.save({ transactions: t }).then(res_qs => {
+							// Add initial deposit to company value update the ownershipPercentage for all users
+							res.status(200).json({ investor: investorProfile, transaction: trans });
+						});
+					}, { transactions: t });
 				})
 			} else {
-				res.status(200).json({ investor: investorProfile })
+				res.status(200).json({ investor: investorProfile });
 			}
 		}).catch(error => {
-			res.status(500).json({ error: error.message })
+			res.status(500).json({ error: error.message });
 		});
 	}
 ];

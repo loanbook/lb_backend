@@ -2,6 +2,7 @@ const moment = require('moment');
 const models = require('../../../models');
 const validator = require('../../../middlewares/apis/admin/installmentsValidator');
 const untilHelper = require('../../../helpers/util');
+const { investorQueue } = require('../../../crons/backendQueue');
 
 const amountRound = untilHelper.roundAmount;
 const getPercentage = untilHelper.getPercentage;
@@ -137,6 +138,8 @@ exports.payInstallmentPost = [
 
 		}).then(last_result => {
 
+			// loanPercentage
+			investorQueue.add('distributeShare', { recoveryAmount: loanPercentage })
 			models.Transaction.findAll({ where: { installmentId: installment.id }, order: [['id', 'DESC']], limit: 2 })
 				.then(tran => {
 					models.Installment.findAndCountAll({
