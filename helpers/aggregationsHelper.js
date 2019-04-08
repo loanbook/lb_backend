@@ -476,7 +476,7 @@ investorInitialDepositEvaluateOwnerShip = async () => {
 			let investorDetail = investors[key];
 			investorAcuredShare = acuredAllLoansInterestValue * (investorDetail.ownershipPercentage / 100);
 			//((Deposits - withdraws + investorOperatingIncome + investorInterestShare)/Assets under management) * 100
-			investorDetail.ownershipPercentage = amountRound((investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome + investorAcuredShare) / assetsUnderManagementValue * 100, 2)
+			investorDetail.ownershipPercentage = amountRound((investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome + investorAcuredShare) / assetsUnderManagementValue * 100)
 			investorDetail.save();
 		}
 		console.log('investorInitialDepositEvaluateOwnerShip Percentage ownership for all user successfully updated.');

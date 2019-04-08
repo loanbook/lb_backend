@@ -22,7 +22,7 @@ exports.generateDashbardCard = (label, value) => {
 
 	return {
 		'title': label,
-		'count': this.roundAmount(value, 2),
+		'count': this.roundAmount(value),
 	}
 }
 
