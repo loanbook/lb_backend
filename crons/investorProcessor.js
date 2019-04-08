@@ -21,6 +21,18 @@ exports.distributeShare = function (job) {
 	})
 }
 
+exports.investorInitialDeposit = function (job) {
+	console.log('--------- Investor Initial Deposit Evaluate OwnerShip Process ---------');
+	const investorId = job.data.investorId;
+	aggrigationsHelper.investorInitialDepositEvaluateOwnerShip()
+		.then(status => {
+			console.log('investorInitialDeposit process', status);
+			return Promise.resolve({ success: status });
+		}).catch(error => {
+			return Promise.reject({ message: error.message });
+		})
+}
+
 addInvestmentAmount = async (investmentAmount, investorId) => {
 	// add investment to company portfolio
 	let companyDetail = await models.LoonBook.findOne();

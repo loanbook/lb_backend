@@ -444,7 +444,7 @@ evaluatePercentageOwnership = async (investorId, investorInterestShare) => {
 		});
 		let assetsUnderManagementValue = await assetsUnderManagement();
 		//((Deposits - withdraws + investorOperatingIncome + investorInterestShare)/Assets under management) * 100
-		return (investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome + investorInterestShare) * assetsUnderManagementValue * 100
+		return (investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome + investorInterestShare) / assetsUnderManagementValue * 100
 	} catch (e) {
 		console.log('Percentage ownership evaluation fail for investor.', investorId)
 		return 0;
@@ -458,12 +458,32 @@ reEvaluatePercentageOwnershipAllInvestors = async () => {
 		for (key in investors) {
 			let investorDetail = investors[key];
 			//((Deposits - withdraws + investorOperatingIncome + investorInterestShare)/Assets under management) * 100
-			investorDetail.ownershipPercentage = (investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome) * assetsUnderManagementValue * 100
+			investorDetail.ownershipPercentage = (investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome) / assetsUnderManagementValue * 100
 			investorDetail.save();
 		}
 		console.log('Percentage ownership for all user successfully updated.')
 	} catch (e) {
 		console.log('Percentage ownership updaet for all user fail.')
+	}
+}
+
+investorInitialDepositEvaluateOwnerShip = async () => {
+	try {
+		let investors = await models.Investor.findAll();
+		let acuredAllLoansInterestValue = await acuredAllLoansInterest();
+		let assetsUnderManagementValue = await assetsUnderManagement();
+		for (key in investors) {
+			let investorDetail = investors[key];
+			investorAcuredShare = acuredAllLoansInterestValue * (investorDetail.ownershipPercentage / 100);
+			//((Deposits - withdraws + investorOperatingIncome + investorInterestShare)/Assets under management) * 100
+			investorDetail.ownershipPercentage = amountRound((investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome + investorAcuredShare) / assetsUnderManagementValue * 100, 2)
+			investorDetail.save();
+		}
+		console.log('investorInitialDepositEvaluateOwnerShip Percentage ownership for all user successfully updated.');
+		return true
+	} catch (e) {
+		console.log('investorInitialDepositEvaluateOwnerShip Percentage ownership updaet for all user fail.');
+		return false
 	}
 }
 
@@ -488,6 +508,7 @@ module.exports = {
 	outstandingLoanValuedPercentage: outstandingLoanValuedPercentage,
 	outstandingCapitalFromLoans: outstandingCapitalFromLoans,
 	reEvaluatePercentageOwnershipAllInvestors: reEvaluatePercentageOwnershipAllInvestors,
+	investorInitialDepositEvaluateOwnerShip: investorInitialDepositEvaluateOwnerShip,
 
 	assetsUnderManagement: assetsUnderManagement,
 	cashPool: cashPool,

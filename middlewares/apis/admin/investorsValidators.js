@@ -18,7 +18,7 @@ exports.createInvestorReqValidator = [
 	}).withMessage("Email is already registered."),
 	body('isActive').isLength({min: 1}).withMessage('This field is required').isBoolean(),
 	// body('location').isLength({min: 1}).withMessage('This field is required.'),
-	body('initialBalance').optional().isInt({min: 1}).withMessage('This must be a number.'),
+	body('initialBalance').optional().isInt({min: 0}).withMessage('This must be a number.'),
 
 	sanitizeBody('firstName').escape().trim(),
 	sanitizeBody('lastName').escape().trim(),

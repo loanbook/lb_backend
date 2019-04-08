@@ -2,6 +2,7 @@ const models = require('../../../models');
 const authHelper = require('../../../helpers/authHelper');
 const investorValidators = require('../../../middlewares/apis/admin/investorsValidators');
 const aggregationsHelper = require('../../../helpers/aggregationsHelper');
+const { investorQueue } = require('../../../crons/backendQueue');
 
 
 exports.listInvestorsGet = async (req, res, next) => {
@@ -46,6 +47,7 @@ exports.createInvestorPost = [
 	async (req, res, next) => {
 		const initialDeposit = parseInt(req.body.initialBalance);
 		let investorProfile = null;
+		let trans_detail = null;
 
 		let userInstance = models.User.build({
 			firstName: req.body.firstName,
@@ -62,25 +64,30 @@ exports.createInvestorPost = [
 					userId: user.id,
 					location: req.body.Investor.location,
 					totalInvested: initialDeposit,
-				}, { transaction: t })
-			})
-		}).then(result => {
-			investorProfile.dataValues.Investor = result;
-			const initialDeposit = parseInt(req.body.initialBalance);
-			if (initialDeposit) {
-				models.Transaction.create({
-					userId: result.userId, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: initialDeposit,
-					comment: 'Initial deposit'
-				}, { transaction: t }).then(trans => {
-					models.LoanBook.findOne().then((companyDetail) => {
-						companyDetail.cashPool = companyDetail.cashPool + initialDeposit;
-						companyDetail.cashDeposit = companyDetail.cashDeposit + initialDeposit;
-						companyDetail.save({ transactions: t }).then(res_qs => {
-							// Add initial deposit to company value update the ownershipPercentage for all users
-							res.status(200).json({ investor: investorProfile, transaction: trans });
+				}, { transaction: t }).then(investor => {
+					investorProfile.dataValues.Investor = investor;
+					const initialDeposit = parseInt(req.body.initialBalance);
+					if (initialDeposit) {
+						return models.Transaction.create({
+							userId: investor.userId, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: initialDeposit,
+							comment: 'Initial deposit'
+						}, { transaction: t }).then(trans => {
+							trans_detail = trans;
+							return models.LoanBook.findOne().then(companyDetail => {
+								companyDetail.cashPool = companyDetail.cashPool + initialDeposit;
+								companyDetail.cashDeposit = companyDetail.cashDeposit + initialDeposit;
+								return companyDetail.save({ transactions: t }).then(res_qs => {
+									// update the ownershipPercentage for all users
+									investorQueue.add('investorInitialDeposit', { investorId: investor.userId })
+								});
+							});
 						});
-					}, { transactions: t });
-				})
+					}
+				});
+			});
+		}).then(result => {
+			if (trans_detail) {
+				res.status(200).json({ investor: investorProfile, transaction: trans_detail });
 			} else {
 				res.status(200).json({ investor: investorProfile });
 			}
