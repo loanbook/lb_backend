@@ -17,7 +17,7 @@ exports.noAmortSchedule = (duration, initialDate, interest, capital) => {
 		interest: 0,
 		principal: 0,
 		balance: capital,
-		status: "DISBURSEMENT",
+		tracking: "DISBURSEMENT",
 		due_date: due_date
 	}];
 
