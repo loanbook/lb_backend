@@ -474,7 +474,7 @@ investorInitialDepositEvaluateOwnerShip = async () => {
 		let assetsUnderManagementValue = await assetsUnderManagement();
 		for (key in investors) {
 			let investorDetail = investors[key];
-			investorAcuredShare = acuredAllLoansInterestValue * (investorDetail.ownershipPercentage / 100);
+			let investorAcuredShare = acuredAllLoansInterestValue * (investorDetail.ownershipPercentage / 100);
 			//((Deposits - withdraws + investorOperatingIncome + investorInterestShare)/Assets under management) * 100
 			investorDetail.ownershipPercentage = amountRound((investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome + investorAcuredShare) / assetsUnderManagementValue * 100)
 			investorDetail.save();
