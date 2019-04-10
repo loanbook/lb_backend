@@ -232,6 +232,15 @@ remainingLoanCapital = async (loanId) => {
 	}
 }
 
+remainingLoanPrincipal = async (loanId) => {
+	try {
+		let principalAmount = await models.Installment.sum('principalAmount', { where: { loanId: loanId, status: 'PAYMENT_DUE' } });
+		return principalAmount ? principalAmount : 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
 /** 
 1. Timely paid loans are valued at a 100%
 2. Loans on grace periods ( 1 - 5 days ) are valued at 100%
@@ -393,16 +402,35 @@ cashWithdrawals = async () => {
 	}
 }
 
+capitalRepayments = async () => {
+	try {
+		let capitalRepaymentsSum = 0;
+		const openLoans = await models.Loan.findAll({
+			where: { status: 'OPEN' },
+		});
+		for (let key in openLoans) {
+			let loanId = openLoans[key].id;
+			let operatingIncomeValue = await remainingLoanPrincipal(loanId);
+			capitalRepaymentsSum = capitalRepaymentsSum + operatingIncomeValue;
+		}
+		return capitalRepaymentsSum;
+	} catch (e) {
+		return 0;
+	}
+}
+
 /*
 # 8 cash available to withdraw ==
 all operating income + deposits - withdrawals + capital repayments - investments
 */
 cashAvailableToWithdrawal = async () => {
 	try {
-		let operatingIncome = await operatingIncome();
-		let cashDeposit = await cashDeposit();
-		let withdrawals = await withdrawals();
-		return 0;
+		let operatingIncomeValue = await operatingIncome();
+		let cashDepositValue = await cashDeposit();
+		let withdrawalsValue = await totalDebitedTilNow();
+		let capitalRepaymentsValue = await capitalRepayments();
+		let investments = await totalLoanAmount();
+		return operatingIncomeValue + cashDepositValue - withdrawalsValue + capitalRepaymentsValue - investments;
 	} catch (e) {
 		return 0;
 	}
