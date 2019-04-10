@@ -11,6 +11,7 @@ router.delete('/destroy/:id', controller.investorDelete);
 
 
 router.post('/add/deposit/', controller.investorAddDeposit);
+router.post('/withdraw/', controller.investorWithdraw);
 
 
 

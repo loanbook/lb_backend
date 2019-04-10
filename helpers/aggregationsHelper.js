@@ -415,7 +415,9 @@ cashAvailableToWithdrawalInvestor == cashAvailableToWithdrawal * (% ownership of
 */
 cashAvailableToWithdrawalInvestor = async (investorId) => {
 	try {
-		return 0;
+		let investorDetail = await models.Investor.findBypk(investorId);
+		let cashAvailableToWithdrawalValue = await cashAvailableToWithdrawal();
+		return cashAvailableToWithdrawalValue * investorDetail.ownershipPercentage;
 	} catch (e) {
 		return 0;
 	}
