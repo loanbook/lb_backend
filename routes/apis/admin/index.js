@@ -4,7 +4,7 @@ const borrowerRouters = require('../admin/borrowers');
 const loansRouters = require('../admin/loans');
 const installmentRouter = require('../admin/installments');
 const statsRouter = require('../admin/stats');
-
+const transactionsRouter= require('../admin/transactions');
 const ADMIN_BASE_PATH = 'admin/';
 
 module.exports = (app, basePath,  passport) => {
@@ -15,5 +15,5 @@ module.exports = (app, basePath,  passport) => {
 	app.use(basePath + ADMIN_BASE_PATH + 'borrowers', passport.authenticate('jwt', {session: false}), borrowerRouters);
 	app.use(basePath + ADMIN_BASE_PATH + 'loans', passport.authenticate('jwt', {session: false}), loansRouters);
 	app.use(basePath + ADMIN_BASE_PATH + 'installments', passport.authenticate('jwt', {session: false}), installmentRouter);
-
+	app.use(basePath + ADMIN_BASE_PATH + 'transactions', passport.authenticate('jwt', {session: false}), transactionsRouter);
 };
