@@ -225,7 +225,7 @@ totalInvestedAmount = async () => {
 
 remainingLoanCapital = async (loanId) => {
 	try {
-		let interestPlusAmount = await models.Installment.sum('payableAmount', { where: { loanId: loanId, status: 'PAYMENT_DUE' } });
+		let interestPlusAmount = await models.Installment.sum('principalAmount', { where: { loanId: loanId, status: 'PAYMENT_DUE' } });
 		return interestPlusAmount ? interestPlusAmount : 0;
 	} catch (e) {
 		return 0;
