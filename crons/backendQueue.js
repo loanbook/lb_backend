@@ -1,5 +1,10 @@
 var Queue = require('bull');
-const { distributeShare, calculateAcuredInterestUpdatePercentage } = require('./investorProcessor');
+const {
+    investorInitialDeposit,
+    investorAddDeposit,
+    investorWithdraw,
+    distributeShare,
+    calculateAcuredInterestUpdatePercentage } = require('./investorProcessor');
 
 var investorQueue = new Queue('Investor Related Tasks', 'redis://localhost:6379');
 var borrowerQueue = new Queue('Borrower Related Tasks', 'redis://localhost:6379');
@@ -13,7 +18,10 @@ investorQueue.on('global:completed', function (job, result) {
 });
 
 
+investorQueue.process('investorAddDeposit', investorAddDeposit);
+investorQueue.process('investorWithdraw', investorWithdraw);
 investorQueue.process('distributeShare', distributeShare);
+investorQueue.process('investorInitialDeposit', investorInitialDeposit);
 investorQueue.process('calculateAcuredInterestUpdatePercentage', calculateAcuredInterestUpdatePercentage);
 
 

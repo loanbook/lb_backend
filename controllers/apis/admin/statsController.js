@@ -7,7 +7,7 @@ const generateDashbardCard = utilsHelper.generateDashbardCard;
 
 exports.statsGet = async function (req, res, next) {
 	let companyDetail = await models.LoanBook.findOne({
-		order: [ [ 'createdAt', 'DESC' ]],
+		order: [['createdAt', 'DESC']],
 	});
 	models.Stats.findOne({
 		order: [['createdAt', 'DESC']],
@@ -19,7 +19,7 @@ exports.statsGet = async function (req, res, next) {
 		stats.totalLoanAmount = generateDashbardCard('Loan Amount', companyDetail.loanApprovedAmount);
 		stats.totalInvestedAmount = generateDashbardCard('Invested Amount', q_res.totalInvestedAmount);
 		stats.assetsUnderManagement = generateDashbardCard('Assets Under Management', q_res.assetsUnderManagement);
-		stats.interestIncome = generateDashbardCard('Interest Income', q_res.interestIncome);
+		stats.interestIncome = generateDashbardCard('Interest Income', companyDetail.interestIncome);
 		stats.fees = generateDashbardCard('Fees', companyDetail.fees);
 		stats.operatingIncome = generateDashbardCard('Operating Income', companyDetail.interestIncome - companyDetail.fees);
 		stats.cashDeposit = generateDashbardCard('Cash Deposit', companyDetail.cashDeposit);

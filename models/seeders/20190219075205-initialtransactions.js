@@ -39,7 +39,7 @@ module.exports = {
 				let transaction = transactions[t];
 				models.Investor.findByPk(transaction.userId).then((investor) => {
 					investor.totalInvested = transaction.amount;
-					investor.ownershipPercentage = parseFloat(transaction.amount / transactionSum * 100).toFixed(1);
+					investor.ownershipPercentage = parseFloat(transaction.amount / transactionSum * 100).toFixed(4);
 					investor.save();
 				})
 			}

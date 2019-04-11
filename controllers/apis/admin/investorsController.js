@@ -2,6 +2,7 @@ const models = require('../../../models');
 const authHelper = require('../../../helpers/authHelper');
 const investorValidators = require('../../../middlewares/apis/admin/investorsValidators');
 const aggregationsHelper = require('../../../helpers/aggregationsHelper');
+const { investorQueue } = require('../../../crons/backendQueue');
 
 
 exports.listInvestorsGet = async (req, res, next) => {
@@ -46,6 +47,7 @@ exports.createInvestorPost = [
 	async (req, res, next) => {
 		const initialDeposit = parseInt(req.body.initialBalance);
 		let investorProfile = null;
+		let trans_detail = null;
 
 		let userInstance = models.User.build({
 			firstName: req.body.firstName,
@@ -62,24 +64,35 @@ exports.createInvestorPost = [
 					userId: user.id,
 					location: req.body.Investor.location,
 					totalInvested: initialDeposit,
-				}, { transaction: t })
-			})
+				}, { transaction: t }).then(investor => {
+					investorProfile.dataValues.Investor = investor;
+					const initialDeposit = parseInt(req.body.initialBalance);
+					if (initialDeposit) {
+						return models.Transaction.create({
+							userId: investor.userId, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: initialDeposit,
+							comment: 'Initial deposit'
+						}, { transaction: t }).then(trans => {
+							trans_detail = trans;
+							return models.LoanBook.findOne().then(companyDetail => {
+								companyDetail.cashPool = companyDetail.cashPool + initialDeposit;
+								companyDetail.cashDeposit = companyDetail.cashDeposit + initialDeposit;
+								return companyDetail.save({ transactions: t }).then(res_qs => {
+									// update the ownershipPercentage for all users
+									investorQueue.add('investorInitialDeposit', { investorId: investor.userId })
+								});
+							});
+						});
+					}
+				});
+			});
 		}).then(result => {
-			investorProfile.dataValues.Investor = result;
-			const initialDeposit = parseInt(req.body.initialBalance);
-			if (initialDeposit) {
-				models.Transaction.create({
-					userId: result.userId, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: initialDeposit,
-					comment: 'Initial deposit'
-				}, { transaction: t }).then(trans => {
-					// Add initial deposit to company value update the ownershipPercentage for all users
-					res.status(200).json({ investor: investorProfile, transaction: trans })
-				})
+			if (trans_detail) {
+				res.status(200).json({ investor: investorProfile, transaction: trans_detail });
 			} else {
-				res.status(200).json({ investor: investorProfile })
+				res.status(200).json({ investor: investorProfile });
 			}
 		}).catch(error => {
-			res.status(500).json({ error: error.message })
+			res.status(500).json({ error: error.message });
 		});
 	}
 ];
@@ -113,17 +126,70 @@ exports.investorAddDeposit = [
 	investorValidators.addDepositValidator,
 
 	async (req, res, next) => {
-		models.Transaction.create({
-			userId: req.investor.id, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: parseInt(req.body.amount),
-			comment: 'Deposit'
-		}).then(trans => {
-			// this backend process will update percentage for each user after this investment.
-			investorQueue.add('calculateAcuredInterestUpdatePercentage', {
-				investmentAmount: req.body.amount,
-				investorId: req.investor.id
-			})
-			res.status(200).json({ transaction: trans, investor: req.investor })
-		}).catch(error => res.status(500).json({ message: error.message }))
+		const amountDeposit = parseInt(req.body.amount);
+		let investor = req.investor.Investor;
+		let transDeposit = null;
+		models.sequelize.transaction((t) => {
+			return models.Transaction.create({
+				userId: req.investor.userId, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: amountDeposit,
+				comment: 'Deposit'
+			}, { transactions: t })
+				.then(trans => {
+					transDeposit = trans;
+					return models.LoanBook.findOne().then(companyDetail => {
+						companyDetail.cashPool = companyDetail.cashPool + amountDeposit;
+						companyDetail.cashDeposit = companyDetail.cashDeposit + amountDeposit;
+						return companyDetail.save({ transactions: t }).then(res_qs => {
+							investor.totalInvested = investor.totalInvested + amountDeposit;
+							return investor.save({ transactions: t }).then(res_investor_qs => {
+								// this backend process will update percentage for each user after this investment.
+								investorQueue.add('investorAddDeposit', { investorId: res_investor_qs.userId });
+								return res_investor_qs;
+							});
+						});
+					});
+				})
+		}).then(investor_qs => {
+			req.investor.Investor = investor_qs;
+			res.status(200).json({ transaction: transDeposit, investor: req.investor })
+		}).catch(error => {
+			res.status(500).json({ error: error.message });
+		});
+	}
+];
+
+exports.investorWithdraw = [
+	investorValidators.withdrawValidator,
+
+	async (req, res, next) => {
+		const amountWithdraw = parseInt(req.body.amount);
+		let investor = req.investor.Investor;
+		let transWithdraw = null;
+		models.sequelize.transaction((t) => {
+			return models.Transaction.create({
+				userId: req.investor.userId, type: 'INVESTMENT_WITHDRAW', transactionFlow: 'DEBITED', amount: amountWithdraw,
+				comment: 'Withdraw'
+			}, { transactions: t }).then(trans => {
+				transWithdraw = trans;
+				return models.LoanBook.findOne().then(companyDetail => {
+					companyDetail.cashPool = companyDetail.cashPool - amountWithdraw;
+					companyDetail.cashWithdrawal = companyDetail.cashWithdrawal + amountWithdraw;
+					return companyDetail.save({ transactions: t }).then(res_qs => {
+						investor.totalWithdraw = investor.totalWithdraw + amountWithdraw;
+						return investor.save({ transactions: t }).then(res_investor_qs => {
+							// this backend process will update percentage for each user after this withdraw.
+							investorQueue.add('investorWithdraw', { investorId: res_investor_qs.userId });
+							return res_investor_qs;
+						});
+					});
+				});
+			});
+		}).then(investor_qs => {
+			req.investor.Investor = investor_qs;
+			res.status(200).json({ transaction: transWithdraw, investor: req.investor })
+		}).catch(error => {
+			res.status(500).json({ error: error.message });
+		});
 	}
 ];
 

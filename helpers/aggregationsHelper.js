@@ -169,7 +169,7 @@ acuredInstallmentInterest = async (loanId) => {
 	if (nextDueInstallmentDetail) {
 		installmentInterestPerDay = nextDueInstallmentDetail.interestAmount / 30; // --todo: change according to month and payment
 		let installmentDueDate = moment(nextDueInstallmentDetail.dueDate);
-		numberOfdays = Math.abs(currentDate.diff(installmentDueDate, 'days'));
+		numberOfdays = Math.abs(30 - installmentDueDate.diff(currentDate, 'days'));
 	}
 	return installmentInterestPerDay * numberOfdays;
 };
@@ -227,6 +227,15 @@ remainingLoanCapital = async (loanId) => {
 	try {
 		let interestPlusAmount = await models.Installment.sum('payableAmount', { where: { loanId: loanId, status: 'PAYMENT_DUE' } });
 		return interestPlusAmount ? interestPlusAmount : 0;
+	} catch (e) {
+		return 0;
+	}
+}
+
+remainingLoanPrincipal = async (loanId) => {
+	try {
+		let principalAmount = await models.Installment.sum('principalAmount', { where: { loanId: loanId, status: 'PAYMENT_DUE' } });
+		return principalAmount ? principalAmount : 0;
 	} catch (e) {
 		return 0;
 	}
@@ -306,10 +315,10 @@ Things to Show on Dashboard
 */
 assetsUnderManagement = async () => {
 	try {
-		let acuredAllLoansInterest = await acuredAllLoansInterest();
-		let outstandingCapitalFromLoans = await outstandingCapitalFromLoans();
+		let acuredAllLoansInterestValue = await acuredAllLoansInterest();
+		let outstandingCapitalFromLoansValue = await outstandingCapitalFromLoans();
 		let cash = await cashPool();
-		return cash + outstandingCapitalFromLoans + acuredAllLoansInterest;
+		return cash + outstandingCapitalFromLoansValue + acuredAllLoansInterestValue;
 	} catch (e) {
 		return 0;
 	}
@@ -393,16 +402,35 @@ cashWithdrawals = async () => {
 	}
 }
 
+capitalRepayments = async () => {
+	try {
+		let capitalRepaymentsSum = 0;
+		const openLoans = await models.Loan.findAll({
+			where: { status: 'OPEN' },
+		});
+		for (let key in openLoans) {
+			let loanId = openLoans[key].id;
+			let operatingIncomeValue = await remainingLoanPrincipal(loanId);
+			capitalRepaymentsSum = capitalRepaymentsSum + operatingIncomeValue;
+		}
+		return capitalRepaymentsSum;
+	} catch (e) {
+		return 0;
+	}
+}
+
 /*
 # 8 cash available to withdraw ==
 all operating income + deposits - withdrawals + capital repayments - investments
 */
 cashAvailableToWithdrawal = async () => {
 	try {
-		let operatingIncome = await operatingIncome();
-		let cashDeposit = await cashDeposit();
-		let withdrawals = await withdrawals();
-		return 0;
+		let operatingIncomeValue = await operatingIncome();
+		let cashDepositValue = await cashDeposit();
+		let withdrawalsValue = await totalDebitedTilNow();
+		let capitalRepaymentsValue = await capitalRepayments();
+		let investments = await totalLoanAmount();
+		return operatingIncomeValue + cashDepositValue - withdrawalsValue + capitalRepaymentsValue - investments;
 	} catch (e) {
 		return 0;
 	}
@@ -415,7 +443,9 @@ cashAvailableToWithdrawalInvestor == cashAvailableToWithdrawal * (% ownership of
 */
 cashAvailableToWithdrawalInvestor = async (investorId) => {
 	try {
-		return 0;
+		let investorDetail = await models.Investor.findBypk(investorId);
+		let cashAvailableToWithdrawalValue = await cashAvailableToWithdrawal();
+		return cashAvailableToWithdrawalValue * investorDetail.ownershipPercentage;
 	} catch (e) {
 		return 0;
 	}
@@ -444,7 +474,7 @@ evaluatePercentageOwnership = async (investorId, investorInterestShare) => {
 		});
 		let assetsUnderManagementValue = await assetsUnderManagement();
 		//((Deposits - withdraws + investorOperatingIncome + investorInterestShare)/Assets under management) * 100
-		return (investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome + investorInterestShare) * assetsUnderManagementValue * 100
+		return (investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome + investorInterestShare) / assetsUnderManagementValue * 100
 	} catch (e) {
 		console.log('Percentage ownership evaluation fail for investor.', investorId)
 		return 0;
@@ -458,12 +488,32 @@ reEvaluatePercentageOwnershipAllInvestors = async () => {
 		for (key in investors) {
 			let investorDetail = investors[key];
 			//((Deposits - withdraws + investorOperatingIncome + investorInterestShare)/Assets under management) * 100
-			investorDetail.ownershipPercentage = (investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome) * assetsUnderManagementValue * 100
+			investorDetail.ownershipPercentage = (investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome) / assetsUnderManagementValue * 100
 			investorDetail.save();
 		}
 		console.log('Percentage ownership for all user successfully updated.')
 	} catch (e) {
 		console.log('Percentage ownership updaet for all user fail.')
+	}
+}
+
+investorInitialDepositEvaluateOwnerShip = async () => {
+	try {
+		let investors = await models.Investor.findAll();
+		let acuredAllLoansInterestValue = await acuredAllLoansInterest();
+		let assetsUnderManagementValue = await assetsUnderManagement();
+		for (key in investors) {
+			let investorDetail = investors[key];
+			let investorAcuredShare = acuredAllLoansInterestValue * (investorDetail.ownershipPercentage / 100);
+			//((Deposits - withdraws + investorOperatingIncome + investorInterestShare)/Assets under management) * 100
+			investorDetail.ownershipPercentage = amountRound((investorDetail.totalInvested - investorDetail.totalWithdraw + investorDetail.operatingIncome + investorAcuredShare) / assetsUnderManagementValue * 100)
+			investorDetail.save();
+		}
+		console.log('investorInitialDepositEvaluateOwnerShip Percentage ownership for all user successfully updated.');
+		return true
+	} catch (e) {
+		console.log('investorInitialDepositEvaluateOwnerShip Percentage ownership updaet for all user fail.');
+		return false
 	}
 }
 
@@ -488,6 +538,7 @@ module.exports = {
 	outstandingLoanValuedPercentage: outstandingLoanValuedPercentage,
 	outstandingCapitalFromLoans: outstandingCapitalFromLoans,
 	reEvaluatePercentageOwnershipAllInvestors: reEvaluatePercentageOwnershipAllInvestors,
+	investorInitialDepositEvaluateOwnerShip: investorInitialDepositEvaluateOwnerShip,
 
 	assetsUnderManagement: assetsUnderManagement,
 	cashPool: cashPool,
