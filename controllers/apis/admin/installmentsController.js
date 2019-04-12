@@ -29,8 +29,19 @@ exports.installmentDetailGet = (req, res, next) => {
 			}
 		]
 	}).then(installment => {
-		if (installment)
+		if (installment) {
+			//check for late installment
+			let installmentLateFee = 0
+			let installmentDueDate = moment(installment.dueDate);
+			let currentDate = moment();
+			if (currentDate.diff(installmentDueDate, 'days') > 5) {
+				installmentLateFee = installment.principleAmount * (1 / 100);
+				// amountToPay = amountToPay + installmentLateFee
+			}
+			installment.dataValues.payableAmount = installment.dataValues.payableAmount + installmentLateFee;
+			installment.dataValues.installmentLateFee = installmentLateFee;
 			res.status(200).json({ installment: installment });
+		}
 		else
 			res.status(400).json({ message: 'Not installment found with provided id.' })
 	}).catch(error => {
