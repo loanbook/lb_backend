@@ -225,17 +225,17 @@ totalInvestedAmount = async () => {
 
 remainingLoanCapital = async (loanId) => {
 	try {
-		let interestPlusAmount = await models.Installment.sum('payableAmount', { where: { loanId: loanId, status: 'PAYMENT_DUE' } });
-		return interestPlusAmount ? interestPlusAmount : 0;
+		let dueCapitalAmount = await models.Installment.sum('principalAmount', { where: { loanId: loanId, status: 'PAYMENT_DUE' } });
+		return dueCapitalAmount ? dueCapitalAmount : 0;
 	} catch (e) {
 		return 0;
 	}
 }
 
-remainingLoanPrincipal = async (loanId) => {
+loanCapitalPaid = async (loanId) => {
 	try {
-		let principalAmount = await models.Installment.sum('principalAmount', { where: { loanId: loanId, status: 'PAYMENT_DUE' } });
-		return principalAmount ? principalAmount : 0;
+		let paidCapitalAmount = await models.Installment.sum('principalAmount', { where: { loanId: loanId, status: 'PAID' } });
+		return paidCapitalAmount ? paidCapitalAmount : 0;
 	} catch (e) {
 		return 0;
 	}
@@ -292,10 +292,10 @@ outstandingCapitalFromLoans = async () => {
 				let openLoan = openLoans[key];
 				const outstandingLoanPercentage = await outstandingLoanValuedPercentage(openLoan.id);
 				const remainingCapital = await remainingLoanCapital(openLoan.id);
-				const accruedInterest = await acuredInstallmentInterest(openLoan.id);
+				// const accruedInterest = await acuredInstallmentInterest(openLoan.id);
 				console.log(outstandingLoanPercentage);
 				// outstandingLoanPercentage * (accrued interest + remaining capital)
-				openLoanValuation = (remainingCapital + accruedInterest) * outstandingLoanPercentage / 100;
+				openLoanValuation = remainingCapital * outstandingLoanPercentage / 100;
 				sumLoansAcuredValuation = sumLoansAcuredValuation + openLoanValuation;
 			}
 		}
@@ -402,6 +402,10 @@ cashWithdrawals = async () => {
 	}
 }
 
+
+/*
+8.a capital repayments
+*/
 capitalRepayments = async () => {
 	try {
 		let capitalRepaymentsSum = 0;
@@ -410,10 +414,22 @@ capitalRepayments = async () => {
 		});
 		for (let key in openLoans) {
 			let loanId = openLoans[key].id;
-			let operatingIncomeValue = await remainingLoanPrincipal(loanId);
+			let operatingIncomeValue = await loanCapitalPaid(loanId);
 			capitalRepaymentsSum = capitalRepaymentsSum + operatingIncomeValue;
 		}
 		return capitalRepaymentsSum;
+	} catch (e) {
+		return 0;
+	}
+}
+
+/*
+8.b investments
+*/
+currentInvestments = async () => {
+	try {
+		let borrowedAmount = await models.Loan.sum('amount', { where: { status: 'OPEN' } });
+		return borrowedAmount ? borrowedAmount : 0;
 	} catch (e) {
 		return 0;
 	}
@@ -429,7 +445,7 @@ cashAvailableToWithdrawal = async () => {
 		let cashDepositValue = await cashDeposit();
 		let withdrawalsValue = await totalDebitedTilNow();
 		let capitalRepaymentsValue = await capitalRepayments();
-		let investments = await totalLoanAmount();
+		let investments = await currentInvestments();
 		return operatingIncomeValue + cashDepositValue - withdrawalsValue + capitalRepaymentsValue - investments;
 	} catch (e) {
 		return 0;
@@ -443,9 +459,9 @@ cashAvailableToWithdrawalInvestor == cashAvailableToWithdrawal * (% ownership of
 */
 cashAvailableToWithdrawalInvestor = async (investorId) => {
 	try {
-		let investorDetail = await models.Investor.findBypk(investorId);
+		let investorDetail = await models.Investor.findByPk(investorId);
 		let cashAvailableToWithdrawalValue = await cashAvailableToWithdrawal();
-		return cashAvailableToWithdrawalValue * investorDetail.ownershipPercentage;
+		return cashAvailableToWithdrawalValue * investorDetail.ownershipPercentage / 100;
 	} catch (e) {
 		return 0;
 	}
