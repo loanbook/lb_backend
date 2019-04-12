@@ -1,5 +1,6 @@
 var CronJob = require('cron').CronJob;
 const statsCron = require('./statsCron');
+const loanCron = require('./loanCron');
 const moment = require('moment');
 
 const { investorQueue } = require('./backendQueue');
@@ -9,6 +10,7 @@ const { investorQueue } = require('./backendQueue');
 // }
 // new CronJob('* * * * * *', printHelloWorld, null, true, 'America/Los_Angeles');
 new CronJob('0 */1 * * * *', statsCron.calculateAndSaveStats, null, true, 'America/Los_Angeles');
+new CronJob('0 */1 * * *', loanCron.changeLoanStatus, null, true, 'America/Los_Angeles');
 
 const successHandler = function (data) {
 	console.log('Background Process run successfully.', data);
