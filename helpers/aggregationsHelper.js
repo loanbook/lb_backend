@@ -533,6 +533,23 @@ investorInitialDepositEvaluateOwnerShip = async () => {
 	}
 }
 
+
+
+/* installment late fee */
+calculateInstallmentLateFee = async (installmentDueDate, payableAmount) => {
+	try {
+		let installmentLateFee = 0;
+		let installmentDue = moment(installmentDueDate);
+		let currentDate = moment();
+		if (currentDate.diff(installmentDue, 'days') > 5) {
+			installmentLateFee = payableAmount * (1 / 100);
+		}
+		return installmentLateFee;
+	} catch (e) {
+		return 0;
+	}
+}
+
 module.exports = {
 	totalInvestorInvested: totalInvestorInvested,
 	totalInvestorDebited: totalInvestorDebited,
@@ -557,6 +574,7 @@ module.exports = {
 	investorInitialDepositEvaluateOwnerShip: investorInitialDepositEvaluateOwnerShip,
 
 	assetsUnderManagement: assetsUnderManagement,
+	calculateInstallmentLateFee: calculateInstallmentLateFee,
 	cashPool: cashPool,
 	interestIncome: interestIncome,
 	fees: fees,

@@ -2,6 +2,7 @@ const { body, validationResult } = require('express-validator/check');
 const { sanitizeBody } = require('express-validator/filter');
 const models = require('../../../models');
 const utilHelper = require('../../../helpers/util');
+const moment = require('moment');
 
 const amountRound = utilHelper.roundAmount;
 
@@ -38,10 +39,10 @@ exports.payInstallmentValidator = [
 					models.Transaction.findOne({
 						where: { installmentId: installment.id, transactionFlow: 'DEBITED' },
 						attributes: [
-
 							[models.sequelize.fn('SUM', models.sequelize.col('interestAmount')), 'paidInterestAmount'],
 							[models.sequelize.fn('SUM', models.sequelize.col('amount')), 'paidAmount'],
 							[models.sequelize.fn('SUM', models.sequelize.col('principalAmount')), 'paidPrincipalAmount'],
+							[models.sequelize.fn('SUM', models.sequelize.col('installmentLateFee')), 'paidInstallmentLateFee'],
 						]
 					}).then(aggregations => {
 						req.installmentAggre = aggregations;
@@ -66,7 +67,15 @@ exports.payInstallmentValidator = [
 			const amount = parseFloat(value);
 			let paidAmount = req.installmentAggre.dataValues.paidAmount;
 			paidAmount = (paidAmount) ? parseFloat(paidAmount) : 0;
-			let remainingAmount = amountRound(req.installment.payableAmount - paidAmount);
+
+			let installmentLateFee = 0;
+			let installmentDueDate = moment(req.installment.dueDate);
+			let currentDate = moment();
+			if (currentDate.diff(installmentDueDate, 'days') > 5) {
+				installmentLateFee = req.installment.payableAmount * (1 / 100);
+			}
+			let remainingAmount = amountRound(req.installment.payableAmount + installmentLateFee - paidAmount);
+
 			if (amount <= 0)
 				throw new Error('Amount must be greater then 0.');
 			else if (amount > remainingAmount)
