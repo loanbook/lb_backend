@@ -6,9 +6,12 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 var cors = require('cors')
 
-
+const paginate = require('express-paginate');
 const app = express();
 app.use(expressLayouts);
+
+// keep this before all routes that will use pagination
+app.use(paginate.middleware(3, 50));
 
 /**
  *  Handle cross origin.

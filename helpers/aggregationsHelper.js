@@ -154,6 +154,8 @@ fetchInstallmentInterestTillToday = async (loanId) => {
 
 acuredInstallmentInterest = async (loanId) => {
 	let currentDate = moment();
+
+	// find the next due installment
 	let nextDueInstallmentDetail = await models.Installment.findOne({
 		where: {
 			loanId: loanId, status: 'PAYMENT_DUE', dueDate: {
@@ -511,7 +513,7 @@ reEvaluatePercentageOwnershipAllInvestors = async () => {
 	} catch (e) {
 		console.log('Percentage ownership updaet for all user fail.')
 	}
-}
+};
 
 investorInitialDepositEvaluateOwnerShip = async () => {
 	try {
@@ -531,7 +533,7 @@ investorInitialDepositEvaluateOwnerShip = async () => {
 		console.log('investorInitialDepositEvaluateOwnerShip Percentage ownership updaet for all user fail.');
 		return false
 	}
-}
+};
 
 module.exports = {
 	totalInvestorInvested: totalInvestorInvested,

@@ -32,7 +32,7 @@ exports.installmentDetailGet = (req, res, next) => {
 		if (installment)
 			res.status(200).json({ installment: installment });
 		else
-			res.status(400).json({ message: 'Not installment found with provided id.' })
+			res.status(400).json({ message: 'No installment found with provided id.' })
 	}).catch(error => {
 		res.status(500).json({ message: error.message });
 	})
@@ -81,7 +81,7 @@ exports.payInstallmentPost = [
 		}
 
 		//check for late installment
-		let installmentLateFee = 0
+		let installmentLateFee = 0;
 		let installmentDueDate = moment(installment.dueDate);
 		let currentDate = moment();
 		if (currentDate.diff(installmentDueDate, 'days') > 5) {
@@ -139,7 +139,7 @@ exports.payInstallmentPost = [
 		}).then(last_result => {
 
 			// loanPercentage
-			investorQueue.add('distributeShare', { recoveryAmount: loanPercentage })
+			investorQueue.add('distributeShare', { recoveryAmount: loanPercentage });
 			models.Transaction.findAll({ where: { installmentId: installment.id }, order: [['id', 'DESC']], limit: 2 })
 				.then(tran => {
 					models.Installment.findAndCountAll({

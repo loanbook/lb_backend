@@ -69,7 +69,10 @@ exports.createInvestorPost = [
 					const initialDeposit = parseInt(req.body.initialBalance);
 					if (initialDeposit) {
 						return models.Transaction.create({
-							userId: investor.userId, type: 'INVESTMENT_DEPOSIT', transactionFlow: 'CREDITED', amount: initialDeposit,
+							userId: investor.userId, 
+							type: 'INVESTMENT_DEPOSIT', 
+							transactionFlow: 'CREDITED', 
+							amount: initialDeposit,
 							comment: 'Initial deposit'
 						}, { transaction: t }).then(trans => {
 							trans_detail = trans;
@@ -78,6 +81,7 @@ exports.createInvestorPost = [
 								companyDetail.cashDeposit = companyDetail.cashDeposit + initialDeposit;
 								return companyDetail.save({ transactions: t }).then(res_qs => {
 									// update the ownershipPercentage for all users
+									console.log('add to quest -custom')
 									investorQueue.add('investorInitialDeposit', { investorId: investor.userId })
 								});
 							});

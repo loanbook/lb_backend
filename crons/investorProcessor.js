@@ -19,7 +19,7 @@ exports.distributeShare = function (job) {
 	}).catch(error => {
 		return Promise.reject({ message: error.message });
 	})
-}
+};
 
 exports.investorInitialDeposit = function (job) {
 	console.log('--------- Investor Initial Deposit Evaluate OwnerShip Process ---------');
@@ -29,9 +29,10 @@ exports.investorInitialDeposit = function (job) {
 			console.log('investorInitialDeposit process', status);
 			return Promise.resolve({ success: status });
 		}).catch(error => {
+			console.log('investorInitialDeposit process error ', error);
 			return Promise.reject({ message: error.message });
 		})
-}
+};
 
 exports.investorAddDeposit = function (job) {
 	console.log('--------- Investor Add Deposit Evaluate OwnerShip Process ---------');
@@ -43,7 +44,7 @@ exports.investorAddDeposit = function (job) {
 		}).catch(error => {
 			return Promise.reject({ message: error.message });
 		})
-}
+};
 
 exports.investorWithdraw = function (job) {
 	console.log('--------- Investor Withdraw Evaluate OwnerShip Process ---------');
@@ -55,22 +56,22 @@ exports.investorWithdraw = function (job) {
 		}).catch(error => {
 			return Promise.reject({ message: error.message });
 		})
-}
+};
 
 addInvestmentAmount = async (investmentAmount, investorId) => {
 	// add investment to company portfolio
 	let companyDetail = await models.LoonBook.findOne();
 	companyDetail.cashPool = companyDetail.cashPool + investmentAmount;
 	companyDetail.cashDeposit = companyDetail.cashDeposit + investmentAmount;
-	companyDetail.save()
+	companyDetail.save();
 	// add investment to Investor portfolio
 	let inestorDetail = await models.Investor.findByPk(investorId);
 	inestorDetail.totalInvested = inestorDetail.totalInvested + investmentAmount;
-	inestorDetail.save()
+	inestorDetail.save();
 	// re evaluate the ownership for all user
 	await aggrigationsHelper.reEvaluatePercentageOwnershipAllInvestors()
 
-}
+};
 
 exports.calculateAcuredInterestUpdatePercentage = function (job) {
 	console.log('--------- Calculate Acured InterestUpdate Percentage Process ---------');
@@ -87,5 +88,5 @@ exports.calculateAcuredInterestUpdatePercentage = function (job) {
 		}).catch(error => {
 			return Promise.reject({ message: error.message });
 		})
-}
+};
 
