@@ -13,7 +13,7 @@ exports.changeLoanStatus = async function () {
 		}
 	}).then(q_res => {
 		// res.status(200).json({ data: q_res });
-		// log for successfull execution
+		// log for successful execution
 		console.log('changeLoanStatus: cron updated records: ', q_res, moment().format('YYYY-MM-DD HH:MM:ss'));
 	}).catch(error => {
 		// res.status(500).json({ message: error.message });
